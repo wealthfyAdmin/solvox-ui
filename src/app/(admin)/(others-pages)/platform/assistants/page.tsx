@@ -20,7 +20,7 @@ interface AssistantSession {
 const SAMPLE_ASSISTANTS: Assistant[] = [
   {
     id: "lumiverse-whistleblower",
-    name: "Lumiverse Whistleblower",
+    name: "Syndrome Support",
     role: "Confidential platform for reporting workplace concerns",
     description: "Secure and anonymous reporting system",
   },

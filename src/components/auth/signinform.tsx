@@ -115,7 +115,7 @@ export default function SignInForm() {
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input
-                    placeholder="admin@solvoxai.com"
+                    placeholder="admin@solvox.ai"
                     type="email"
                     defaultValue={email}
                     onChange={(e) => setEmail(e.target.value)}

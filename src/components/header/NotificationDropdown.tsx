@@ -1,17 +1,31 @@
 "use client"
 import React, { useState } from "react"
 import { Modal } from "../ui/modal"
-import { useToast } from "../ui/toast" // <-- import your toast hook
+import { useToast } from "../ui/toast"
 
 export default function OutboundCallButton() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("+91")
   const [loading, setLoading] = useState(false)
 
-  const { showToast, ToastContainer } = useToast() // <-- toast hook
+  const { showToast, ToastContainer } = useToast()
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+
+    // Ensure it always starts with +91
+    if (!value.startsWith("+91")) {
+      value = "+91" + value.replace(/\D/g, "")
+    } else {
+      // Strip non-numeric characters except + at the start
+      value = "+91" + value.slice(3).replace(/\D/g, "")
+    }
+
+    setPhoneNumber(value)
+  }
 
   const handleMakeCall = async () => {
-    if (phoneNumber.trim() === "+91" || phoneNumber.trim().length < 5) {
+    if (phoneNumber.trim() === "+91" || phoneNumber.trim().length < 8) {
       showToast("Please enter a valid phone number", "error")
       return
     }
@@ -37,7 +51,7 @@ export default function OutboundCallButton() {
         )
         setIsModalOpen(false)
       } else {
-        showToast( "Failed to initiate call", "error")
+        showToast("Failed to initiate call", "error")
       }
     } catch (err) {
       showToast("Something went wrong while making the call", "error")
@@ -95,7 +109,7 @@ export default function OutboundCallButton() {
             id="phone"
             type="text"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            onChange={handlePhoneChange}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             placeholder="+91XXXXXXXXXX"
           />
@@ -111,7 +125,7 @@ export default function OutboundCallButton() {
         </button>
       </Modal>
 
-      {/* Toast container (once per component tree, but safe here) */}
+      {/* Toast container */}
       <ToastContainer />
     </div>
   )

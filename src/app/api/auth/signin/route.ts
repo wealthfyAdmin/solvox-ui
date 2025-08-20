@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 
 // Static credentials for demo
 const DEMO_CREDENTIALS = {
-  email: "admin@solvoxai.com",
+  email: "admin@solvox.ai",
   password: "admin123",
 }
 

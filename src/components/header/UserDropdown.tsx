@@ -18,19 +18,21 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
-  const handleSignOut = async () => {
-    try {
-      const res = await fetch("/api/signout", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        router.push("/signin");
-      } else {
-        console.error("Sign out failed:", data.error);
-      }
-    } catch (error) {
-      console.error("Sign out error:", error);
+ const handleSignOut = async () => {
+  try {
+    const res = await fetch("/api/auth/signout", { method: "POST" });
+    const data = await res.json();
+
+    if (data.success) {
+      router.push("/signup"); // redirect after cookie removal
+    } else {
+      console.error("Sign out failed:", data.error);
     }
-  };
+  } catch (error) {
+    console.error("Sign out error:", error);
+  }
+};
+
 
   return (
     <div className="relative">
@@ -47,7 +49,7 @@ export default function UserDropdown() {
           />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Admin</span>
+        <span className="block mr-1 font-medium text-theme-sm">User</span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -79,7 +81,7 @@ export default function UserDropdown() {
             Admin
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            admin@soxvoxai.com
+            admin@soxvox.ai
           </span>
         </div>
 

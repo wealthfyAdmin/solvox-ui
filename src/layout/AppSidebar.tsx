@@ -36,14 +36,14 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Platform",
     subItems: [{ name: "Assistants", path: "/platform/assistants", pro: false },
-    { name: "Phone Numbers", path: "/platform/phone-numbers", pro: false }
+    // { name: "Phone Numbers", path: "/platform/phone-numbers", pro: false }
     ],
   },
-  {
-    icon: <PageIcon />,
-    name: "Call Logs",
-    path: "/call-logs",
-  },
+  // {
+  //   icon: <PageIcon />,
+  //   name: "Call Logs",
+  //   path: "/call-logs",
+  // },
   // {
   //   icon: <UserCircleIcon />,
   //   name: "Billing & Usage",

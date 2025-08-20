@@ -17,7 +17,7 @@ const callLogs: CallLog[] = [
   {
     id: "1",
     caller: "Ravi Kumar",
-    assistant: "Lumiverse Whistleblower",
+    assistant: "Syndrome Support",
     date: "2025-08-09 14:32",
     duration: "5m 23s",
     status: "Completed",

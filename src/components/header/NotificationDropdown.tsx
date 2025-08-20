@@ -88,12 +88,12 @@ export default function OutboundCallButton() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        className="max-w-md p-6"
+        className="max-w-md p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg"
       >
-        <h2 className="text-xl font-semibold text-gray-800 mb-1">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">
           Outbound Call
         </h2>
-        <p className="text-sm text-gray-500 mb-5">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
           Enter the phone number you want to call.
         </p>
 
@@ -101,7 +101,7 @@ export default function OutboundCallButton() {
         <div className="space-y-1">
           <label
             htmlFor="phone"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Phone Number
           </label>
@@ -110,7 +110,9 @@ export default function OutboundCallButton() {
             type="text"
             value={phoneNumber}
             onChange={handlePhoneChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 
+                 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             placeholder="+91XXXXXXXXXX"
           />
         </div>
@@ -119,11 +121,13 @@ export default function OutboundCallButton() {
         <button
           onClick={handleMakeCall}
           disabled={loading}
-          className="mt-6 w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 shadow-md transition disabled:opacity-50"
+          className="mt-6 w-full bg-blue-600 dark:bg-blue-700 text-white py-2.5 rounded-lg 
+               hover:bg-blue-700 dark:hover:bg-blue-800 shadow-md transition disabled:opacity-50"
         >
           {loading ? "Calling..." : "Call"}
         </button>
       </Modal>
+
 
       {/* Toast container */}
       <ToastContainer />

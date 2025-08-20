@@ -81,7 +81,7 @@ export default function OutboundCallButton() {
             d="M3 5a2 2 0 012-2h2.28a1 1 0 01.948.684l1.518 4.553a1 1 0 01-.272 1.058l-1.163 1.163a16.978 16.978 0 006.364 6.364l1.163-1.163a1 1 0 011.058-.272l4.553 1.518a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.82 21 3 14.18 3 6V5z"
           />
         </svg>
-        <span className="text-white font-medium">Make Call</span>
+        <span className="text-white font-medium">Make a Call</span>
       </button>
 
       {/* Reusable Modal */}

@@ -20,7 +20,6 @@ export default function VerticallyCenteredModal() {
       <Modal
         isOpen={isOpen}
         onClose={closeModal}
-        showCloseButton={false}
         className="max-w-[507px] p-6 lg:p-10"
       >
         <div className="text-center">

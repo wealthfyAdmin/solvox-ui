@@ -25,7 +25,6 @@ export default function FullScreenModal() {
         isOpen={isFullscreenModalOpen}
         onClose={closeFullscreenModal}
         isFullscreen={true}
-        showCloseButton={true}
       >
         <div className="fixed top-0 left-0 flex flex-col justify-between w-full h-screen p-6 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 lg:p-10">
           <div>

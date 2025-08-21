@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { RoomEvent, Track, type RemoteParticipant, type AudioTrack, createLocalAudioTrack, LocalAudioTrack } from "livekit-client"
+import { RoomEvent, Track, type RemoteParticipant, createLocalAudioTrack, LocalAudioTrack } from "livekit-client"
 import { LiveKitRoom, useRoomContext, useLocalParticipant } from "@livekit/components-react"
 import useChatAndTranscription from "@/hooks/useChatAndTranscription"
 import OutboundCallButton from "../header/NotificationDropdown"
@@ -73,13 +73,9 @@ function ChatWindowInner({
   const [audioTrack, setAudioTrack] = useState<LocalAudioTrack | null>(null)
   const [agentConnected, setAgentConnected] = useState(false)
   const [agentConnecting, setAgentConnecting] = useState(false)
-  const [showOutboundCall, setShowOutboundCall] = useState(false)
   const [hasFirstAssistantMessage, setHasFirstAssistantMessage] = useState(false)
   const [showOutbound, setShowOutbound] = useState(true)
-
-  const handleMakeCallClick = () => {
-    setShowOutbound(true)
-  }
+  const [roomConnected, setRoomConnected] = useState(false)
 
   const { messages, send } = useChatAndTranscription()
   const room = useRoomContext()
@@ -87,19 +83,59 @@ function ChatWindowInner({
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const audioElementRef = useRef<HTMLAudioElement | null>(null)
+  const [orderedMessages, setOrderedMessages] = useState<Message[]>([])
+
+  // ✅ Improved status logic
+  const getConnectionStatus = () => {
+    if (!roomConnected) {
+      return {
+        text: "Disconnected",
+        color: "bg-gray-400"
+      }
+    }
+    
+    // If we have messages or agent is connected, show as connected
+    if (agentConnected || orderedMessages.length > 0) {
+      return {
+        text: "Connected",
+        color: "bg-green-500"
+      }
+    }
+    
+    // Only show connecting if room is connected but no agent yet AND no messages
+    if (agentConnecting && orderedMessages.length === 0) {
+      return {
+        text: "Connecting...",
+        color: "bg-yellow-500 animate-pulse"
+      }
+    }
+    
+    return {
+      text: "Connected",
+      color: "bg-green-500"
+    }
+  }
+
+  const detectSender = (participantIdentity: string | null | undefined): boolean => {
+    if (!participantIdentity) {
+      return false // undefined → agent
+    }
+    const id = participantIdentity.toLowerCase()
+    if (id.includes("agent") || id.includes("assistant") || id.includes("bot")) {
+      return false // agent
+    }
+    if (id.includes("user")) {
+      return true // user
+    }
+    return false // default to agent
+  }
 
   useEffect(() => {
     const processedMessages: Message[] = messages.map((msg) => {
-      const isUser = msg.from?.isLocal === true || msg.from?.identity === localParticipant?.identity
-
-      console.log("[v0] Processing message:", {
-        text: msg.message?.substring(0, 50) + "...",
-        fromIdentity: msg.from?.identity,
-        fromIsLocal: msg.from?.isLocal,
-        localParticipantIdentity: localParticipant?.identity,
-        isUser: isUser,
-        sender: isUser ? "user" : "agent",
-      })
+      // console.log("Processing message:", msg)
+      const isUser = msg.from?.isLocal === true || 
+                     msg.from?.identity === localParticipant?.identity ||
+                     detectSender(msg.from?.identity)
 
       return {
         id: msg.id || `msg-${Date.now()}-${Math.random()}`,
@@ -113,24 +149,74 @@ function ChatWindowInner({
     const hasAssistantMessage = processedMessages.some((msg) => msg.sender === "agent")
     if (hasAssistantMessage && !hasFirstAssistantMessage) {
       setHasFirstAssistantMessage(true)
+      // If we have agent messages, consider agent as connected
+      if (!agentConnected) {
+        setAgentConnected(true)
+        setAgentConnecting(false)
+      }
     }
 
     setOrderedMessages(processedMessages)
-  }, [messages, hasFirstAssistantMessage])
-
-  const [orderedMessages, setOrderedMessages] = useState<Message[]>([])
+  }, [messages, hasFirstAssistantMessage, localParticipant?.identity, agentConnected])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [orderedMessages.length])
 
+  // Track room connection state
   useEffect(() => {
     if (!room) return
 
-    const handleParticipantConnected = (participant: RemoteParticipant) => {
-      console.log(`👤 Participant connected: ${participant.identity}`)
+    const handleConnected = () => {
+      // console.log("🔗 Room connected")
+      setRoomConnected(true)
+      // Only set connecting if we don't have messages yet
+      if (orderedMessages.length === 0) {
+        setAgentConnecting(true)
+      }
+    }
 
-      if (participant.identity.includes("agent") || participant.identity.includes("assistant")) {
+    const handleDisconnected = () => {
+      // console.log("❌ Room disconnected")
+      setRoomConnected(false)
+      setAgentConnected(false)
+      setAgentConnecting(false)
+      onConnectionStatusChange?.("disconnected")
+    }
+
+    const handleReconnecting = () => {
+      // console.log("🔄 Room reconnecting...")
+      onConnectionStatusChange?.("connecting")
+    }
+
+    room.on(RoomEvent.Connected, handleConnected)
+    room.on(RoomEvent.Disconnected, handleDisconnected)
+    room.on(RoomEvent.Reconnecting, handleReconnecting)
+
+    // Check if room is already connected
+    if (room.state === "connected") {
+      setRoomConnected(true)
+    }
+
+    return () => {
+      room.off(RoomEvent.Connected, handleConnected)
+      room.off(RoomEvent.Disconnected, handleDisconnected)
+      room.off(RoomEvent.Reconnecting, handleReconnecting)
+    }
+  }, [room, onConnectionStatusChange, orderedMessages.length])
+
+  // Agent detection with timeout
+  useEffect(() => {
+    if (!room) return
+
+    let agentTimeout: NodeJS.Timeout
+
+    const handleParticipantConnected = (participant: RemoteParticipant) => {
+      // console.log(`👤 Participant connected: ${participant.identity}`)
+
+      if (participant.identity !== localParticipant?.identity) {
+        // console.log("🤖 Remote participant detected - treating as agent")
+        clearTimeout(agentTimeout)
         setAgentConnecting(false)
         setAgentConnected(true)
         onConnectionStatusChange?.("connected")
@@ -138,12 +224,17 @@ function ChatWindowInner({
     }
 
     const handleParticipantDisconnected = (participant: RemoteParticipant) => {
-      console.log(`👋 Participant disconnected: ${participant.identity}`)
-
-      if (participant.identity.includes("assistant")) {
-        setAgentConnected(false)
-        setAgentConnecting(false)
-        onConnectionStatusChange?.("disconnected")
+      // console.log(`👋 Participant disconnected: ${participant.identity}`)
+      
+      if (participant.identity !== localParticipant?.identity) {
+        // Give agent 5 seconds to reconnect, but don't show disconnected if we have active conversation
+        agentTimeout = setTimeout(() => {
+          if (room.participants.size === 0 && orderedMessages.length === 0) {
+            setAgentConnected(false)
+            setAgentConnecting(false)
+            onConnectionStatusChange?.("disconnected")
+          }
+        }, 5000)
       }
     }
 
@@ -151,24 +242,23 @@ function ChatWindowInner({
     room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
 
     return () => {
+      clearTimeout(agentTimeout)
       room.off(RoomEvent.ParticipantConnected, handleParticipantConnected)
       room.off(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
     }
-  }, [room, onConnectionStatusChange])
+  }, [room, localParticipant, onConnectionStatusChange, orderedMessages.length])
 
+  // Accept audio from ANY remote participant
   useEffect(() => {
     if (!room) return
 
     const handleTrackSubscribed = (track: any, publication: any, participant: any) => {
-      if (
-        track.kind === "audio" &&
-        (participant.identity.includes("agent") || participant.identity.includes("assistant"))
-      ) {
-        console.log("[v0] Setting up agent audio track")
+      if (track.kind === "audio" && participant.identity !== localParticipant?.identity) {
+        // console.log("[v0] Setting up remote audio track from:", participant.identity)
 
         if (!audioElementRef.current) {
           audioElementRef.current = new Audio()
-          audioElementRef.current.autoplay = false // don’t autoplay
+          audioElementRef.current.autoplay = false
           audioElementRef.current.volume = 1.0
         }
 
@@ -178,7 +268,7 @@ function ChatWindowInner({
         if (mode === "voice") {
           audioElementRef.current.muted = false
           audioElementRef.current.play().catch((error) => {
-            console.error("[v0] Failed to play agent audio:", error)
+            console.error("[v0] Failed to play remote audio:", error)
           })
         } else {
           audioElementRef.current.muted = true
@@ -192,19 +282,19 @@ function ChatWindowInner({
     return () => {
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     }
-  }, [room, mode])
+  }, [room, mode, localParticipant])
 
   useEffect(() => {
     if (!audioElementRef.current) return
 
     if (mode === "voice" && audioElementRef.current.srcObject) {
-      console.log("[v0] Enabling agent audio for voice mode")
+      // console.log("[v0] Enabling agent audio for voice mode")
       audioElementRef.current.muted = false
       audioElementRef.current.play().catch((error) => {
         console.error("[v0] Failed to play agent audio:", error)
       })
     } else if (mode === "text") {
-      console.log("[v0] Disabling agent audio for text mode")
+      // console.log("[v0] Disabling agent audio for text mode")
       audioElementRef.current.muted = true
       audioElementRef.current.pause()
     }
@@ -221,8 +311,7 @@ function ChatWindowInner({
   const sendMessage = useCallback(
     async (text: string) => {
       if (!text.trim()) return
-
-      console.log("📤 Sending message:", text)
+      // console.log("📤 Sending message:", text)
       await send(text)
       setInputText("")
     },
@@ -246,6 +335,7 @@ function ChatWindowInner({
 
       setAudioTrack(track)
       setIsVoiceActive(true)
+      // console.log("✅ Voice conversation started")
     } catch (error) {
       console.error("❌ Failed to start voice:", error)
     }
@@ -259,6 +349,7 @@ function ChatWindowInner({
       audioTrack.stop()
       setAudioTrack(null)
       setIsVoiceActive(false)
+      // console.log("✅ Voice conversation stopped")
     } catch (error) {
       console.error("❌ Failed to stop voice:", error)
     }
@@ -272,6 +363,8 @@ function ChatWindowInner({
     }
   }, [isVoiceActive, startVoiceConversation, stopVoiceConversation])
 
+  const connectionStatus = getConnectionStatus()
+
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       {/* Header */}
@@ -282,12 +375,9 @@ function ChatWindowInner({
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${agentConnecting ? "bg-yellow-500 animate-pulse" : agentConnected ? "bg-green-500" : "bg-gray-400"
-                }`}
-            ></div>
+            <div className={`w-2 h-2 rounded-full ${connectionStatus.color}`}></div>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {agentConnecting ? "Connecting..." : agentConnected ? "Connected" : "Disconnected"}
+              {connectionStatus.text}
             </span>
           </div>
         </div>
@@ -315,15 +405,13 @@ function ChatWindowInner({
             Voice Chat
           </button>
         </div>
-
         {showOutbound && <OutboundCallButton />}
       </div>
 
       {/* Messages Area - WhatsApp Style */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-4xl mx-auto">
-          {(agentConnecting || (!hasFirstAssistantMessage && agentConnected)) && <AgentJoiningAnimation />}
-
+          {(agentConnecting && orderedMessages.length === 0) && <AgentJoiningAnimation />}
           {orderedMessages.map((message) => (
             <ChatMessage key={message.id} message={message} assistantName={assistantName} />
           ))}
@@ -379,17 +467,17 @@ function ChatWindowInner({
 
             <button
               onClick={toggleVoiceConversation}
-              disabled={!agentConnected}
+              disabled={!roomConnected}
               className={`px-8 py-4 w-100 rounded font-medium transition-all transform hover:scale-105 ${isVoiceActive
-                  ? "bg-blue-500 hover:bg-red-600 text-white shadow-lg"
+                  ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
                   : "bg-green-500 hover:bg-green-600 text-white shadow-lg"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {isVoiceActive ? " End Voice Chat" : "Start Voice Chat"}
+              {isVoiceActive ? "End Voice Chat" : "Start Voice Chat"}
             </button>
 
-            {!agentConnected && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Waiting for agent connection...</p>
+            {!roomConnected && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Connecting to room...</p>
             )}
           </div>
         </div>
@@ -414,7 +502,6 @@ export default function ChatWindow({
         adaptiveStream: true,
         dynacast: true,
       }}
-
     >
       <ChatWindowInner
         assistantName={assistantName}

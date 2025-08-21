@@ -229,7 +229,7 @@ function ChatWindowInner({
       if (participant.identity !== localParticipant?.identity) {
         // Give agent 5 seconds to reconnect, but don't show disconnected if we have active conversation
         agentTimeout = setTimeout(() => {
-          if (room.participants.size === 0 && orderedMessages.length === 0) {
+          if ((room as any).participants.size === 0 && orderedMessages.length === 0) {
             setAgentConnected(false)
             setAgentConnecting(false)
             onConnectionStatusChange?.("disconnected")

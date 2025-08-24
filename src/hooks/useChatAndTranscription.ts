@@ -1,79 +1,73 @@
-"use client"
+"use client";
 
-import { useMemo, useRef } from "react"
+import { useMemo, useRef } from "react";
 import {
-  type ReceivedChatMessage,
   useChat,
-  useRoomContext,
   useTranscriptions,
   useLocalParticipant,
-} from "@livekit/components-react"
+} from "@livekit/components-react";
 
-type TranscriptionWithTimestamp = {
-  text?: string
-  participant?: {
-    identity: string
-    isLocal: boolean
-  }
-  participantIdentity?: string
-  timestamp?: number
-}
+export function useChatAndTranscription() {
+  const { chatMessages, send } = useChat();
+  const transcriptions = useTranscriptions();
+  const { localParticipant } = useLocalParticipant();
 
-export default function useChatAndTranscription() {
-  const transcriptions = useTranscriptions()
-  const chat = useChat()
-  const room = useRoomContext()
-  const { localParticipant } = useLocalParticipant()
+  // For stable timestamps on transcriptions
+  const transcriptionTimestamps = useRef<Map<string, number>>(new Map());
 
-  const transcriptionTimestamps = useRef<Map<string, number>>(new Map())
+  const messages = useMemo(() => {
+    const processed: any[] = [];
 
-  const mergedMessages = useMemo(() => {
-    const transcriptionMessages: ReceivedChatMessage[] = transcriptions.map(
-      (t, index) => {
-        const transcription = t as TranscriptionWithTimestamp
-        const transcriptionKey = `${transcription.text}-${index}`
+    // ---- Process text chat messages ----
+    chatMessages.forEach((msg) => {
+      processed.push({
+        id: msg.id,
+        from: msg.from,
+        message: msg.message,
+        timestamp:
+          typeof msg.timestamp === "number" ? msg.timestamp : Date.now(),
+        isUser: msg.from?.isLocal === true,
+        isAgent: msg.from?.isLocal === false && !!msg.from?.identity,
+        isSystem: msg.from === undefined,
+      });
+    });
 
-        let timestamp: number
-        if (transcription.timestamp) {
-          timestamp = transcription.timestamp
-        } else if (transcriptionTimestamps.current.has(transcriptionKey)) {
-          timestamp = transcriptionTimestamps.current.get(transcriptionKey)!
-        } else {
-          // create synthetic stable timestamp
-          timestamp = Date.now() - (transcriptions.length - index) * 1000
-          transcriptionTimestamps.current.set(transcriptionKey, timestamp)
-        }
+    // ---- Process transcription messages ----
+    transcriptions.forEach((t, index) => {
+      const key = `${t.text}-${t.participantInfo?.identity || "unknown"}-${index}`;
+      let timestamp: number;
 
-        let fromParticipant: { identity: string; isLocal: boolean }
-        if (transcription.participant) {
-          fromParticipant = transcription.participant
-        } else {
-          const isUser =
-            localParticipant &&
-            transcription.participantIdentity === localParticipant.identity
-          fromParticipant = {
-            identity: isUser ? localParticipant.identity : "agent",
-            isLocal: !!isUser,
-          }
-        }
-
-        return {
-          id: `transcription-${index}`,
-          timestamp,
-          message: transcription.text || "",
-          from: fromParticipant,
-        } as ReceivedChatMessage
+      if (transcriptionTimestamps.current.has(key)) {
+        timestamp = transcriptionTimestamps.current.get(key)!;
+      } else {
+        timestamp = Date.now() - (transcriptions.length - index) * 1000;
+        transcriptionTimestamps.current.set(key, timestamp);
       }
-    )
 
-    const allMessages = [...chat.chatMessages, ...transcriptionMessages]
+      const identity = t.participantInfo?.identity;
+      const isUser =
+        !!identity && identity === localParticipant?.identity; // ✅ check against local participant
 
-    return allMessages.sort((a, b) => {
-      const timestampA = typeof a.timestamp === "number" ? a.timestamp : 0
-      const timestampB = typeof b.timestamp === "number" ? b.timestamp : 0
-      return timestampA - timestampB
-    })
-  }, [transcriptions, chat.chatMessages, localParticipant])
+      processed.push({
+        id: `transcript-${timestamp}-${index}`,
+        from: {
+          identity,
+          isLocal: isUser,
+        },
+        message: t.text,
+        timestamp,
+        isUser, // ✅ user speech → right
+        isAgent: !isUser, // ✅ remote speech → left
+        isSystem: false,
+      });
+    });
 
-  return { messages: mergedMessages, send: chat.send }
+    // ---- Sort all messages by timestamp ----
+    return processed.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  }, [chatMessages, transcriptions, localParticipant?.identity]);
+
+  return {
+    messages,
+    send,
+  };
 }

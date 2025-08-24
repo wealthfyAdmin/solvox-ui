@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { RoomEvent, Track, type RemoteParticipant, createLocalAudioTrack, LocalAudioTrack } from "livekit-client"
 import { LiveKitRoom, useRoomContext, useLocalParticipant } from "@livekit/components-react"
-import useChatAndTranscription from "@/hooks/useChatAndTranscription"
+import { Mic, MicOff, X, PhoneOff } from "lucide-react"
+import {useChatAndTranscription} from "@/hooks/useChatAndTranscription"
 import OutboundCallButton from "../header/NotificationDropdown"
 import WaveAnimation from "../waveanimation/wave-animation"
 import AgentJoiningAnimation from "../agentjoininganimation/agent-joining-animation"
@@ -15,6 +16,7 @@ interface ChatWindowProps {
   roomName: string
   participantToken: string
   onConnectionStatusChange?: (status: "connected" | "connecting" | "disconnected" | "error") => void
+  onEndSession?: () => void
 }
 
 interface Message {
@@ -66,15 +68,18 @@ function ChatWindowInner({
   assistantName,
   assistantRole,
   onConnectionStatusChange,
+  onEndSession,
 }: Omit<ChatWindowProps, "livekitUrl" | "roomName" | "participantToken">) {
   const [mode, setMode] = useState<"text" | "voice">("text")
   const [inputText, setInputText] = useState("")
   const [isVoiceActive, setIsVoiceActive] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [audioTrack, setAudioTrack] = useState<LocalAudioTrack | null>(null)
   const [agentConnected, setAgentConnected] = useState(false)
   const [agentConnecting, setAgentConnecting] = useState(false)
   const [hasFirstAssistantMessage, setHasFirstAssistantMessage] = useState(false)
   const [showOutbound, setShowOutbound] = useState(true)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
   const [roomConnected, setRoomConnected] = useState(false)
 
   const { messages, send } = useChatAndTranscription()
@@ -335,6 +340,7 @@ function ChatWindowInner({
 
       setAudioTrack(track)
       setIsVoiceActive(true)
+      setIsMuted(false)
       // console.log("✅ Voice conversation started")
     } catch (error) {
       console.error("❌ Failed to start voice:", error)
@@ -349,19 +355,65 @@ function ChatWindowInner({
       audioTrack.stop()
       setAudioTrack(null)
       setIsVoiceActive(false)
+      setIsMuted(false)
       // console.log("✅ Voice conversation stopped")
     } catch (error) {
       console.error("❌ Failed to stop voice:", error)
     }
   }, [audioTrack, localParticipant, isVoiceActive])
 
-  const toggleVoiceConversation = useCallback(() => {
-    if (isVoiceActive) {
-      stopVoiceConversation()
+  const toggleMute = useCallback(() => {
+    if (!audioTrack) return
+
+    if (isMuted) {
+      audioTrack.unmute()
+      setIsMuted(false)
     } else {
+      audioTrack.mute()
+      setIsMuted(true)
+    }
+  }, [audioTrack, isMuted])
+
+  const handleDisconnect = useCallback(async () => {
+    if (room) {
+      await room.disconnect()
+    }
+  }, [room])
+
+  const exitVoiceChat = useCallback(async () => {
+    setIsDisconnecting(true)
+    try {
+      await handleDisconnect()
+    } finally {
+      setIsDisconnecting(false)
+    }
+    onEndSession?.()
+  }, [handleDisconnect, onEndSession])
+
+  const endSession = useCallback(async () => {
+    setIsDisconnecting(true)
+    try {
+      await stopVoiceConversation()
+      await handleDisconnect()
+    } finally {
+      setIsDisconnecting(false)
+    }
+    onEndSession?.()
+  }, [stopVoiceConversation, handleDisconnect, onEndSession])
+
+  // Auto-start voice when switching to voice mode
+  useEffect(() => {
+    if (mode === "voice" && !isVoiceActive && roomConnected) {
       startVoiceConversation()
     }
-  }, [isVoiceActive, startVoiceConversation, stopVoiceConversation])
+  }, [mode, isVoiceActive, roomConnected, startVoiceConversation])
+
+  // Auto-stop voice when switching to text mode
+  useEffect(() => {
+    if (mode === "text" && isVoiceActive) {
+      stopVoiceConversation()
+    }
+  }, [mode, isVoiceActive, stopVoiceConversation])
 
   const connectionStatus = getConnectionStatus()
 
@@ -453,31 +505,60 @@ function ChatWindowInner({
                 />
               </svg>
             </button>
+            <button
+              onClick={endSession}
+              disabled={isDisconnecting}
+              className="w-12 h-12 bg-red-500 text-white rounded-full hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              title="End Session"
+            >
+              <PhoneOff className="w-5 h-5" />
+            </button>
           </div>
         </div>
       ) : (
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            {isVoiceActive && (
-              <div className="flex flex-col items-center space-y-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Listening...</p>
-                <WaveAnimation isActive={isVoiceActive} className="h-12" />
-              </div>
-            )}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div className="flex flex-col items-center justify-center space-y-3">
+            {/* Voice Status Indicator */}
+            <div className="flex flex-col items-center space-y-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {isVoiceActive 
+                  ? (isMuted ? "Microphone muted" : "Listening...") 
+                  : "Connecting to voice..."
+                }
+              </p>
+              {isVoiceActive && (
+                <WaveAnimation isActive={!isMuted} className="h-8" />
+              )}
+            </div>
 
-            <button
-              onClick={toggleVoiceConversation}
-              disabled={!roomConnected}
-              className={`px-8 py-4 w-100 rounded font-medium transition-all transform hover:scale-105 ${isVoiceActive
-                  ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
-                  : "bg-green-500 hover:bg-green-600 text-white shadow-lg"
+            {/* Voice Controls */}
+            <div className="flex items-center gap-3">
+              {/* Mute/Unmute Button */}
+              <button
+                onClick={toggleMute}
+                disabled={!isVoiceActive}
+                className={`p-3 rounded-full transition-all transform hover:scale-105 ${
+                  isMuted
+                    ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                    : "bg-green-500 hover:bg-green-600 text-white shadow-lg"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {isVoiceActive ? "End Voice Chat" : "Start Voice Chat"}
-            </button>
+              >
+                {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+
+              {/* End Session Button */}
+              <button
+                onClick={exitVoiceChat}
+                disabled={isDisconnecting}
+                className="p-3 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                title="End Session"
+              >
+                <PhoneOff className="w-5 h-5" />
+              </button>
+            </div>
 
             {!roomConnected && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Connecting to room...</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Connecting to room...</p>
             )}
           </div>
         </div>
@@ -493,6 +574,7 @@ export default function ChatWindow({
   roomName,
   participantToken,
   onConnectionStatusChange,
+  onEndSession,
 }: ChatWindowProps) {
   return (
     <LiveKitRoom
@@ -507,6 +589,7 @@ export default function ChatWindow({
         assistantName={assistantName}
         assistantRole={assistantRole}
         onConnectionStatusChange={onConnectionStatusChange}
+        onEndSession={onEndSession}
       />
     </LiveKitRoom>
   )

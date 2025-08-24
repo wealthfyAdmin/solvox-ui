@@ -139,6 +139,35 @@ export default function Home() {
     [selectedAssistant],
   )
 
+  const handleEndSession = useCallback(async () => {
+    console.log("Ending session...")
+    
+    // Notify backend about session end
+    if (currentSession) {
+      try {
+        await fetch("/api/assistant-session", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: currentSession.roomName }),
+        })
+        console.log("Session ended on backend:", currentSession.roomName)
+      } catch (error) {
+        console.error("Failed to notify backend about session end:", error)
+      }
+    }
+
+    // Reset all states to show assistant selection again
+    setCurrentSession(null)
+    setSelectedAssistant(null)
+    setError("")
+    setIsCreatingSession(false)
+    
+    // Reset connection statuses
+    setConnectionStatuses({})
+    
+    console.log("Session cleanup completed")
+  }, [currentSession])
+
   useEffect(() => {
     return () => {
       if (currentSession) {
@@ -175,6 +204,7 @@ export default function Home() {
           roomName={currentSession.roomName}
           participantToken={currentSession.token}
           onConnectionStatusChange={handleConnectionStatusChange}
+          onEndSession={handleEndSession}
         />
       ) : selectedAssistant && isCreatingSession ? (
         <div className="flex items-center justify-center h-[300px]">

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get("session")
@@ -10,28 +10,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const requestData = await request.json()
     const backendUrl = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
     
-    const backendResponse = await fetch(`${backendUrl}/api/agent/livekit-token`, {
-      method: 'POST',
+    const backendResponse = await fetch(`${backendUrl}/api/agent/?organization_id=1&is_active=true`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${sessionCookie.value}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestData),
     })
 
     if (!backendResponse.ok) {
-      const errorData = await backendResponse.json().catch(() => ({}))
-      return NextResponse.json({ error: errorData.error || "Failed to get LiveKit token" }, { status: backendResponse.status })
+      return NextResponse.json({ error: "Failed to fetch assistants" }, { status: backendResponse.status })
     }
 
     const data = await backendResponse.json()
     return NextResponse.json(data)
 
   } catch (error) {
-    console.error('LiveKit token API error:', error)
+    console.error('Assistants API error:', error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

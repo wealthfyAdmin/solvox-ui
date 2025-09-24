@@ -36,7 +36,7 @@ export default function SignInForm() {
 
       if (response.ok) {
         router.push("/")
-        router.refresh()
+        // router.refresh()
       } else {
         setError(data.error || "Invalid credentials")
       }

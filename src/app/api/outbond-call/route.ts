@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const { phoneNumber, assistantName } = await request.json();
     
     // Call Python backend with lk dispatch
-    const pythonBackendUrl = process.env.PYTHON_BACKEND_URL;
+    const pythonBackendUrl = process.env.PYTHON_NEXT_PUBLIC_PYTHON_BACKEND_URL;
     
     const response = await fetch(`${pythonBackendUrl}/api/call`, {
       method: 'POST',

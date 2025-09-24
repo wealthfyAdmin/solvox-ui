@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const requestData = await request.json()
     const backendUrl = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
     
-    const backendResponse = await fetch(`${backendUrl}/api/agent/livekit-token`, {
+    const backendResponse = await fetch(`${backendUrl}/api/agent/start`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionCookie.value}`,
@@ -24,14 +24,14 @@ export async function POST(request: NextRequest) {
 
     if (!backendResponse.ok) {
       const errorData = await backendResponse.json().catch(() => ({}))
-      return NextResponse.json({ error: errorData.error || "Failed to get LiveKit token" }, { status: backendResponse.status })
+      return NextResponse.json({ error: errorData.error || "Failed to start agent" }, { status: backendResponse.status })
     }
 
     const data = await backendResponse.json()
     return NextResponse.json(data)
 
   } catch (error) {
-    console.error('LiveKit token API error:', error)
+    console.error('Agent start API error:', error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -32,6 +32,11 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/",
   },
+    {
+    icon: <UserCircleIcon />,
+    name: "Agent Setup",
+    path: "/agent-setup",
+  },
   {
     icon: <GridIcon />,
     name: "Platform",

@@ -16,7 +16,7 @@ export default function DeleteAgentModal({
 }) {
   return (
     <Modal isOpen={isOpen} onClose={onCancel} className="max-w-md p-8">
-      <h3 className="mb-3 text-xl font-semibold text-foreground dark:text-white">Delete Agent?</h3>
+      <h3 className="mb-3 text-xl font-semibold text-foreground dark:text-white">Delete Assistant?</h3>
       <p className="mb-6 text-sm text-muted-foreground dark:text-white">
         Are you sure you want to delete <strong>{agentName}</strong>? This action cannot be undone.
       </p>

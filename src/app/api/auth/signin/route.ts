@@ -1,36 +1,72 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-// Static credentials for demo
-const DEMO_CREDENTIALS = {
-  email: "admin@solvox.ai",
-  password: "admin123",
-}
+const LOGIN_API_URL = "http://34.14.223.154/api/login"
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
 
-    // Validate credentials
-    if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
-      // Create a simple session token (in production, use proper JWT or session management)
-      const sessionToken = "demo-session-" + Date.now()
+    // Call the external login API
+    const loginResponse = await fetch(LOGIN_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
 
-      // Set session cookie
-      const cookieStore = await cookies()
-      cookieStore.set("session", sessionToken, {
+    if (!loginResponse.ok) {
+      const errorData = await loginResponse.json().catch(() => ({}))
+      return NextResponse.json(
+        { error: errorData.message || "Invalid email or password" },
+        { status: loginResponse.status },
+      )
+    }
+
+    const loginData = await loginResponse.json()
+    const { access_token, token_type } = loginData
+
+    if (!access_token) {
+      return NextResponse.json({ error: "No access token received" }, { status: 500 })
+    }
+
+    // Store the access token securely in httpOnly cookie
+    const cookieStore = await cookies()
+    cookieStore.set("access_token", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    })
+
+    // Also store token type if needed
+    if (token_type) {
+      cookieStore.set("token_type", token_type, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: "/",
       })
-
-      return NextResponse.json({ success: true })
-    } else {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
     }
+
+    // Keep the session cookie for middleware compatibility
+    cookieStore.set("session", "authenticated", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: "Login successful",
+    })
   } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Login error:", error)
+    return NextResponse.json({ error: "Internal server error. Please try again." }, { status: 500 })
   }
 }

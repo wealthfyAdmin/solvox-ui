@@ -10,15 +10,15 @@ export function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
   const isProtectedRoute = !isAuthRoute // all non-auth pages are protected
 
-  if (isProtectedRoute && !isAuthenticated) {
-    const signInUrl = new URL("/signin", request.url)
-    signInUrl.searchParams.set("callbackUrl", pathname)
-    return NextResponse.redirect(signInUrl)
-  }
+  // if (isProtectedRoute && !isAuthenticated) {
+  //   const signInUrl = new URL("/signin", request.url)
+  //   signInUrl.searchParams.set("callbackUrl", pathname)
+  //   return NextResponse.redirect(signInUrl)
+  // }
 
-  if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url))
-  }
+  // if (isAuthRoute && isAuthenticated) {
+  //   return NextResponse.redirect(new URL("/", request.url))
+  // }
 
   return NextResponse.next()
 }

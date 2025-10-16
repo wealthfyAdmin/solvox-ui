@@ -40,7 +40,7 @@ export default function CreateOrganizationModal({
         name: orgName,
         description: orgDesc || undefined,
         is_active: true,
-        keys: { },
+        keys: {},
       }
 
       const res = await fetch("/api/organizations", {

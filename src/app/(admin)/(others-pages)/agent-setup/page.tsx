@@ -88,7 +88,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
   return [value, setValue] as const
 }
 
-export default function AgentPage({ disabled }: { disabled?: boolean }) {
+export default function AgentSetupPage(disabled?: boolean) {
   const [agents, setAgents] = useLocalStorage<AgentRecord[]>(STORAGE_KEY, [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -135,7 +135,6 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
         const res = await fetch("/api/auth/me", { credentials: "include" })
         if (res.ok) {
           const userData = await res.json()
-          console.log(userData)
           setCurrentUser(userData.user || userData)
           setError(null)
         } else {
@@ -153,6 +152,27 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
     loadCurrentUser()
   }, [])
 
+  const fetchOrganizations = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch(`${BACKEND_URL}/api/organization/?skip=0&limit=100`, { credentials: "include" })
+      if (!res.ok) throw new Error("Failed to fetch organizations")
+      const data = await res.json()
+      const list = data.organizations || []
+      setOrganizations(list)
+      if (!selectedOrgId && list.length > 0) {
+        setSelectedOrgId(list[0].id)
+      }
+    } catch (error) {
+      console.error("Failed to load organizations:", error)
+      setError("Failed to load organizations")
+      setOrganizations([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const loadOrganizations = async () => {
       if (!currentUser) return
@@ -165,24 +185,7 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
       }
 
       if (currentUser.role === "superadmin") {
-        try {
-          setLoading(true)
-          setError(null)
-          const res = await fetch(`${BACKEND_URL}/api/organization/?skip=0&limit=100`, { credentials: "include" })
-          if (!res.ok) throw new Error("Failed to fetch organizations")
-          const data = await res.json()
-          const organizations = data.organizations || []
-          setOrganizations(organizations)
-          if (!selectedOrgId && organizations.length > 0) {
-            setSelectedOrgId(organizations[0].id)
-          }
-        } catch (error) {
-          console.error("Failed to load organizations:", error)
-          setError("Failed to load organizations")
-          setOrganizations([])
-        } finally {
-          setLoading(false)
-        }
+        await fetchOrganizations() // use internal API proxy
       }
     }
 
@@ -197,25 +200,26 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
         setAgents([])
         return
       }
-      
+
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(`${BACKEND_URL}/api/agent/?organization_id=${selectedOrgId}`, { credentials: "include" })
+        const res = await fetch(`${BACKEND_URL}/api/agent?organization_id=${selectedOrgId}`, { credentials: "include" })
         if (res.ok) {
           const data = await res.json()
-          console.log(data)
-          if (data.agents) {
-            setAgents(data.agents)
-            if (!selectedId && data.agents.length > 0) {
-              setSelectedId(data.agents[0].id)
-            }
-          } else {
-            setAgents([])
+          console.log("Fetched agents:", data)
+
+          // data is an array, not an object
+          const agentsArray = Array.isArray(data) ? data : data.agents || []
+          setAgents(agentsArray)
+
+          if (!selectedId && agentsArray.length > 0) {
+            setSelectedId(agentsArray[0].id)
           }
         } else {
           setAgents([])
         }
+
       } catch (error) {
         console.error("Error loading agents:", error)
         setError("Failed to load agents")
@@ -226,6 +230,8 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
     }
     loadAgents()
   }, [selectedOrgId])
+
+  console.log("Agents:", agents, selectedOrgId)
 
   useEffect(() => {
     if (!selectedId && agents.length > 0) {
@@ -284,18 +290,37 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
     // Save logic here
   }
 
-  const handleDeleteAgentConfirmed = () => {
+  const handleDeleteAgentConfirmed = async () => {
     if (!agentToDelete) return
-    setAgents((prev) => {
-      const remaining = prev.filter((a) => a.id !== agentToDelete.id)
-      if (selectedId === agentToDelete.id) {
-        const nextId = remaining[0]?.id ?? null
-        setSelectedId(nextId)
+    try {
+      setLoading(true)
+      setError(null)
+
+      const res = await fetch(`${BACKEND_URL}/api/agent/${encodeURIComponent(agentToDelete.id)}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      if (!res.ok) {
+        // try to read error, but proceed to show message
+        const errText = await res.text().catch(() => "")
+        throw new Error(errText || "Failed to delete assistant")
       }
-      return remaining
-    })
-    setAgentToDelete(null)
-    setDeleteOpen(false)
+
+      setAgents((prev) => {
+        const remaining = prev.filter((a) => a.id !== agentToDelete.id)
+        if (selectedId === agentToDelete.id) {
+          const nextId = remaining[0]?.id ?? null
+          setSelectedId(nextId)
+        }
+        return remaining
+      })
+    } catch (e: any) {
+      setError(e?.message || "Failed to delete assistant")
+    } finally {
+      setLoading(false)
+      setAgentToDelete(null)
+      setDeleteOpen(false)
+    }
   }
 
   const costs: CostBreakdown = {
@@ -376,7 +401,7 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
 
       <div className="min-h-screen space-y-8 pb-8">
         <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols:[280px_1fr] lg:grid-cols:[280px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols:[280px_1fr] lg:grid-cols-[280px_1fr]">
             {/* Sidebar - mirrors Agents page styling */}
             <aside
               className={cn(
@@ -507,7 +532,12 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
               {/* Agents list */}
               <ul className="mt-4 space-y-1">
                 {agents
-                  .filter((a) => !selectedOrgId || (a as any).orgId === selectedOrgId)
+                  .filter(
+                    (a) =>
+                      !selectedOrgId ||
+                      String((a as any).orgId) === String(selectedOrgId) ||
+                      String((a as any).organization_id) === String(selectedOrgId)
+                  )
                   .map((a) => (
                     <li key={a.id}>
                       <button
@@ -515,7 +545,7 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
                           "w-full rounded-lg px-3 py-2 text-left text-sm transition border",
                           selectedId === a.id
                             ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-blue-500 ring-1 ring-blue-500"
-                            : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent",
+                            : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent"
                         )}
                         onClick={() => setSelectedId(a.id)}
                         aria-current={selectedId === a.id ? "true" : undefined}
@@ -553,12 +583,19 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
                       </button>
                     </li>
                   ))}
-                {agents.filter((a) => !selectedOrgId || (a as any).orgId === selectedOrgId).length === 0 && (
-                  <li className="text-sm text-muted-foreground text-center dark:text-gray-300">
-                    {selectedOrgId ? "No agents yet" : "Select organization"}
-                  </li>
-                )}
+
+                {agents.filter(
+                  (a) =>
+                    !selectedOrgId ||
+                    String((a as any).orgId) === String(selectedOrgId) ||
+                    String((a as any).organization_id) === String(selectedOrgId)
+                ).length === 0 && (
+                    <li className="text-sm text-muted-foreground text-center dark:text-gray-300">
+                      {selectedOrgId ? "No agents yet" : "Select organization"}
+                    </li>
+                  )}
               </ul>
+
             </aside>
 
             {/* Main Content - mirrors Agents page */}
@@ -676,17 +713,47 @@ export default function AgentPage({ disabled }: { disabled?: boolean }) {
             open={modalOpen}
             onClose={() => setModalOpen(false)}
             onCreate={handleCreateAgent}
-            organizationId={selectedOrgId}
+            organizationId={selectedOrgId} // pass org id so Create button enables and payload includes it
           />
           {canCreateOrganization && (
-            <CreateOrganizationModal open={orgCreateOpen} onClose={() => setOrgCreateOpen(false)} onCreate={() => {}} />
+            <CreateOrganizationModal
+              open={orgCreateOpen}
+              onClose={() => setOrgCreateOpen(false)}
+              onCreate={async () => {
+                await fetchOrganizations()
+              }}
+            />
           )}
           <DeleteOrganizationModal
             open={orgDeleteOpen}
             onCancel={() => setOrgDeleteOpen(false)}
-            onConfirm={() => {
-              // preserve hook; implement as needed for your backend
-              setOrgDeleteOpen(false)
+            onConfirm={async () => {
+              try {
+                if (!selectedOrgId) {
+                  setOrgDeleteOpen(false)
+                  return
+                }
+                setLoading(true)
+                setError(null)
+                const res = await fetch(`${BACKEND_URL}/api/organization/${encodeURIComponent(selectedOrgId)}`, {
+                  method: "DELETE",
+                  credentials: "include",
+                })
+                if (!res.ok) {
+                  const text = await res.text().catch(() => "")
+                  throw new Error(text || "Failed to delete organization")
+                }
+                setOrganizations((prev) => prev.filter((o) => o.id !== selectedOrgId))
+                // reset selection if needed
+                const remaining = organizations.filter((o) => o.id !== selectedOrgId)
+                setSelectedOrgId(remaining[0]?.id ?? "")
+                setAgents([]) // clear agents for deleted org
+              } catch (e: any) {
+                setError(e?.message || "Failed to delete organization")
+              } finally {
+                setLoading(false)
+                setOrgDeleteOpen(false)
+              }
             }}
           />
           <ChatDrawer open={chatOpen} onClose={() => setChatOpen(false)} agentName={selected?.name ?? "Assistant"} />

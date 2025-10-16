@@ -4,14 +4,13 @@ import { useEffect, useState } from "react"
 import { Modal } from "@/components/ui/modal"
 import Button from "../ui/button/Button"
 
-
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
 export default function NewAgentModal({
   open,
   onClose,
   onCreate,
-  organizationId, // newly supported prop
+  organizationId, // required to enable the Create button
 }: {
   open: boolean
   onClose: () => void
@@ -82,7 +81,9 @@ export default function NewAgentModal({
                 return
               }
               const orgIdStr = typeof rawOrgId === "string" ? rawOrgId.trim() : String(rawOrgId)
+              const orgIdNum = Number(orgIdStr) // ensure numeric for backend
 
+              // use internal API so cookies/headers are forwarded by our route
               const res = await fetch(`${BACKEND_URL}/api/agent`, {
                 method: "POST",
                 credentials: "include",
@@ -90,7 +91,7 @@ export default function NewAgentModal({
                 body: JSON.stringify({
                   name: name.trim(),
                   description: desc.trim() || undefined,
-                  organization_id: orgIdStr,
+                  organization_id: isNaN(orgIdNum) ? orgIdStr : orgIdNum,
                 }),
               })
 

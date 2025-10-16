@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Room, RoomEvent, RemoteParticipant, Track, ConnectionState } from "livekit-client";
+import Button from "../ui/button/Button";
 
 export default function WebCallModal({ open, onClose }) {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -209,6 +210,16 @@ export default function WebCallModal({ open, onClose }) {
     return value;
   };
 
+  // ⬇️ Add these at the top of your component
+const overlayClasses =
+  "fixed inset-0 h-full w-full bg-gray-400/50 dark:bg-gray-900/60 backdrop-blur-[32px] transition-colors duration-300";
+
+const getContentClasses = (open: boolean) =>
+  `fixed right-0 top-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl 
+   transform transition-all duration-300 ease-out 
+   ${open ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`;
+
+
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -263,7 +274,7 @@ export default function WebCallModal({ open, onClose }) {
             ))}
           </div>
           <div className="mt-4 flex space-x-3">
-            <button 
+            <Button 
               onClick={() => {
                 navigator.clipboard.writeText(callSummary.transcription?.join('\n') || '');
                 alert('Transcription copied to clipboard!');
@@ -271,8 +282,8 @@ export default function WebCallModal({ open, onClose }) {
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
             >
               Copy Transcription
-            </button>
-            <button 
+            </Button>
+            <Button 
               onClick={() => {
                 const blob = new Blob([callSummary.transcription?.join('\n') || ''], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
@@ -287,12 +298,12 @@ export default function WebCallModal({ open, onClose }) {
               className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
             >
               Download
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
-      <button
+      <Button
         onClick={handleNewCall}
         className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
       >
@@ -300,7 +311,7 @@ export default function WebCallModal({ open, onClose }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
         </svg>
         <span>Make Another Call</span>
-      </button>
+      </Button>
     </div>
   );
 
@@ -387,20 +398,21 @@ export default function WebCallModal({ open, onClose }) {
 
       <div className="space-y-4">
         {callStatus === "idle" && (
-          <button
-            onClick={handleMakeCall}
+          <Button size="sm"  onClick={handleMakeCall}
             disabled={!phoneNumber.trim()}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
-          >
+            className=" bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold w-full ">
+
+         
+          
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             <span>Make Call</span>
-          </button>
+           </Button>
         )}
 
         {(callStatus === "connecting" || callStatus === "dialing") && (
-          <button
+          <Button
             onClick={handleEndCall}
             className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
           >
@@ -408,12 +420,12 @@ export default function WebCallModal({ open, onClose }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
             </svg>
             <span>Cancel Call</span>
-          </button>
+          </Button>
         )}
 
         {callStatus === "connected" && (
           <div className="flex space-x-3">
-            <button
+            <Button
               onClick={toggleMute}
               className={`flex-1 p-4 rounded-xl transition-colors flex items-center justify-center space-x-2 ${isMuted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               title={isMuted ? "Unmute" : "Mute"}
@@ -422,8 +434,8 @@ export default function WebCallModal({ open, onClose }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMuted ? "M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" : "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"} />
               </svg>
               <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleEndCall}
               className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
             >
@@ -431,7 +443,7 @@ export default function WebCallModal({ open, onClose }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
               </svg>
               <span>End Call</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -466,15 +478,15 @@ export default function WebCallModal({ open, onClose }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50" style={{ display: open ? 'block' : 'none' }}>
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-300" onClick={(callStatus === "idle" || callStatus === "summary") ? onClose : undefined} />
+    <div className="fixed inset-0 z-[99999]" style={{ display: open ? 'block' : 'none' }}>
+      <div className={overlayClasses} onClick={(callStatus === "idle" || callStatus === "summary") ? onClose : undefined} />
       
       <audio ref={audioElementRef} autoPlay playsInline style={{ display: 'none' }} />
       
-      <div className={`fixed right-0 top-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl transform transition-all duration-300 ease-out ${open ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+      <div className={getContentClasses(open)}>
         <div className="flex flex-col h-full">
           <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg">
-            <button
+            <Button
               onClick={(callStatus === "idle" || callStatus === "summary") ? onClose : handleEndCall}
               className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors duration-200"
               title={callStatus === "idle" ? "Close" : callStatus === "summary" ? "Close" : "End Call"}
@@ -482,13 +494,11 @@ export default function WebCallModal({ open, onClose }) {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl backdrop-blur-sm">
-                  {callStatus === "summary" ? "📋" : "📞"}
-                </div>
+              
                 <div>
                   <h2 className="text-xl font-bold">
                     {callStatus === "summary" ? "Call Summary" : "Make a Call"}
@@ -523,14 +533,7 @@ export default function WebCallModal({ open, onClose }) {
             {callStatus === "summary" && callSummary ? renderSummaryView() : renderCallInterface()}
           </div>
 
-          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
-            <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
-              <span className="flex items-center space-x-2">
-                <span>🚀</span>
-                <span>Powered by LiveKit SIP</span>
-              </span>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>

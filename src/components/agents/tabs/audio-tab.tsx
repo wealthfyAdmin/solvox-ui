@@ -42,9 +42,7 @@ const ASR_MODELS = {
     { value: "enhanced", label: "Enhanced" },
     { value: "base", label: "Base" },
   ],
-  openai: [
-    { value: "whisper-1", label: "Whisper v1" },
-  ],
+  openai: [{ value: "whisper-1", label: "Whisper v1" }],
   google: [
     { value: "latest_long", label: "Latest Long" },
     { value: "latest_short", label: "Latest Short" },
@@ -95,7 +93,6 @@ const TTS_VOICES = {
     { value: "en-US-Neural2-C", label: "Neural2 C " },
     { value: "en-US-Neural2-D", label: "Neural2 D" },
     { value: "en-IN-Chirp3-HD-Achernar", label: "Achernar HD" },
-
   ],
 }
 
@@ -110,7 +107,7 @@ export default function AudioTab({
 }) {
   const currentAsrProvider = agent?.asrProvider?.toLowerCase() || "deepgram"
   const currentTtsProvider = agent?.ttsProvider?.toLowerCase() || "openai"
-  
+
   const availableAsrModels = ASR_MODELS[currentAsrProvider as keyof typeof ASR_MODELS] || ASR_MODELS.deepgram
   const availableTtsVoices = TTS_VOICES[currentTtsProvider as keyof typeof TTS_VOICES] || TTS_VOICES.openai
 
@@ -122,7 +119,7 @@ export default function AudioTab({
           disabled={disabled}
           value={agent?.language?.includes("India") ? "en-IN" : "en-US"}
           onChange={(e) => {
-            const selectedLang = LANGUAGES.find(lang => lang.value === e.target.value)
+            const selectedLang = LANGUAGES.find((lang) => lang.value === e.target.value)
             onUpdate({ language: selectedLang?.label || "English (US)" })
           }}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -133,9 +130,7 @@ export default function AudioTab({
             </option>
           ))}
         </select>
-        <Help>
-          Select the primary language for speech recognition and synthesis
-        </Help>
+        <Help>Select the primary language for speech recognition and synthesis</Help>
       </Section>
 
       {/* Speech-to-Text Configuration */}
@@ -149,11 +144,11 @@ export default function AudioTab({
               value={agent?.asrProvider?.toLowerCase() || "deepgram"}
               onChange={(e) => {
                 const provider = e.target.value
-                const providerLabel = ASR_PROVIDERS.find(p => p.value === provider)?.label || "Deepgram"
+                const providerLabel = ASR_PROVIDERS.find((p) => p.value === provider)?.label || "Deepgram"
                 const defaultModel = ASR_MODELS[provider as keyof typeof ASR_MODELS]?.[0]?.value || "nova-2"
-                onUpdate({ 
+                onUpdate({
                   asrProvider: providerLabel,
-                  asrModel: defaultModel 
+                  asrModel: defaultModel,
                 })
               }}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -183,8 +178,6 @@ export default function AudioTab({
             </select>
           </div>
         </div>
-
-        
       </Section>
 
       {/* Text-to-Speech Configuration */}
@@ -198,11 +191,11 @@ export default function AudioTab({
               value={agent?.ttsProvider?.toLowerCase() || "openai"}
               onChange={(e) => {
                 const provider = e.target.value
-                const providerLabel = TTS_PROVIDERS.find(p => p.value === provider)?.label || "OpenAI"
+                const providerLabel = TTS_PROVIDERS.find((p) => p.value === provider)?.label || "OpenAI"
                 const defaultVoice = TTS_VOICES[provider as keyof typeof TTS_VOICES]?.[0]?.value || "alloy"
-                onUpdate({ 
+                onUpdate({
                   ttsProvider: providerLabel,
-                  ttsVoice: defaultVoice 
+                  ttsVoice: defaultVoice,
                 })
               }}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -265,14 +258,12 @@ export default function AudioTab({
                 step="50"
                 disabled={disabled}
                 value={agent?.bufferSize ?? 200}
-                onChange={(e) => onUpdate({ bufferSize: parseInt(e.target.value) })}
+                onChange={(e) => onUpdate({ bufferSize: Number.parseInt(e.target.value) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
               />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>100ms</span>
-                <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
-                  {agent?.bufferSize ?? 200}ms
-                </span>
+                <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">{agent?.bufferSize ?? 200}ms</span>
                 <span>1000ms</span>
               </div>
             </div>
@@ -290,7 +281,7 @@ export default function AudioTab({
                 step="0.1"
                 disabled={disabled}
                 value={agent?.speedRate ?? 1.0}
-                onChange={(e) => onUpdate({ speedRate: parseFloat(e.target.value) })}
+                onChange={(e) => onUpdate({ speedRate: Number.parseFloat(e.target.value) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
               />
               <div className="flex justify-between text-xs text-gray-500">

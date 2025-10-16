@@ -15,13 +15,54 @@ export default function CreateOrganizationModal({
 }) {
   const [name, setName] = useState("")
   const [desc, setDesc] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
       setName("")
       setDesc("")
+      setSubmitError(null)
+      setSubmitting(false)
     }
   }, [open])
+
+  const handleCreate = async () => {
+    const orgName = name.trim()
+    const orgDesc = desc.trim()
+    if (!orgName) return
+
+    try {
+      setSubmitting(true)
+      setSubmitError(null)
+
+      const payload = {
+        name: orgName,
+        description: orgDesc || undefined,
+        is_active: true,
+        keys: { },
+      }
+
+      const res = await fetch("/api/organizations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "")
+        throw new Error(text || "Failed to create organization")
+      }
+
+      await onCreate(orgName, orgDesc || undefined)
+      onClose()
+    } catch (err: any) {
+      setSubmitError(err?.message || "Failed to create organization")
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <Modal isOpen={open} onClose={onClose} className="max-w-lg p-8">
@@ -48,13 +89,18 @@ export default function CreateOrganizationModal({
             placeholder="What does your organization do?"
           />
         </div>
+        {submitError && (
+          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+            {submitError}
+          </p>
+        )}
       </div>
       <div className="mt-6 flex items-center justify-end gap-3">
-        <Button variant="outline" size="sm" onClick={onClose}>
+        <Button variant="outline" size="sm" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
-        <Button size="sm" disabled={!name.trim()} onClick={() => onCreate(name, desc)}>
-          Create
+        <Button size="sm" onClick={handleCreate} disabled={!name.trim() || submitting} aria-busy={submitting}>
+          {submitting ? "Creating..." : "Create"}
         </Button>
       </div>
     </Modal>

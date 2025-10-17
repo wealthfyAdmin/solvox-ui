@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-const LOGIN_API_URL = "http://34.14.223.154/api/login"
+const LOGIN_API_URL = "http://localhost:8000/api/login"
 
 export async function POST(request: NextRequest) {
   try {

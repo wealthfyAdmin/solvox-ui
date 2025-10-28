@@ -5,15 +5,15 @@ import type { AgentRecord } from "@/app/(admin)/(others-pages)/agent-setup/page"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-6 rounded-xl border p-4">
-      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
+    <section className="mb-6 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
       {children}
     </section>
   )
 }
 
 function Help({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1 text-xs text-muted-foreground">{children}</p>
+  return <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{children}</p>
 }
 
 export default function AgentTab({

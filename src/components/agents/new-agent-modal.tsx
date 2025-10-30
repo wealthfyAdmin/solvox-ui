@@ -10,7 +10,7 @@ export default function NewAgentModal({
   open,
   onClose,
   onCreate,
-  organizationId, // required to enable the Create button
+  organizationId,
 }: {
   open: boolean
   onClose: () => void
@@ -31,13 +31,24 @@ export default function NewAgentModal({
     }
   }, [open])
 
+  const generateUniqueName = (orgId: string | number, displayname: string): string => {
+    const timestamp = Date.now()
+    const sanitized = displayname
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+    return `${orgId}-${sanitized}-${timestamp}`
+  }
+
   return (
     <Modal isOpen={open} onClose={onClose} className="max-w-lg p-8">
       <h3 className="mb-6 text-xl font-semibold text-foreground dark:text-white">Create new assistant</h3>
 
       <div className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">Assistant Name</label>
+          <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">
+            Assistant Display Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -81,15 +92,17 @@ export default function NewAgentModal({
                 return
               }
               const orgIdStr = typeof rawOrgId === "string" ? rawOrgId.trim() : String(rawOrgId)
-              const orgIdNum = Number(orgIdStr) // ensure numeric for backend
+              const orgIdNum = Number(orgIdStr)
 
-              // use internal API so cookies/headers are forwarded by our route
+              const uniqueName = generateUniqueName(orgIdNum, name.trim())
+
               const res = await fetch(`${BACKEND_URL}/api/agent`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  name: name.trim(),
+                  name: uniqueName,
+                  displayname: name.trim(),
                   description: desc.trim() || undefined,
                   organization_id: isNaN(orgIdNum) ? orgIdStr : orgIdNum,
                 }),

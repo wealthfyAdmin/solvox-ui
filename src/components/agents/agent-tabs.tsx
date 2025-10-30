@@ -38,6 +38,7 @@ export default function AgentTabs({
 
       const payload = {
         name: agent.name,
+        displayname: agent.displayname,
         description: agent.description,
         instructions: agent.prompt,
         greeting_message: agent.welcomeMessage,

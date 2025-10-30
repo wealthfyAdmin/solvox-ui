@@ -17,19 +17,20 @@ export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | nu
     const origin = hostUrl || "https://your-domain.com"
     const agentId = agent?.id || "AGENT_ID"
 
-    return `<!-- Start of Voice Agent Script -->
+return `<!-- Start of Voice Agent Script -->
 <script type="text/javascript">
-(function(){
+document.addEventListener("DOMContentLoaded", function() {
   var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
   s1.async=true;
   s1.src='${origin}/embed.js';
   s1.setAttribute('data-agent-id', '${agentId}');
   s1.charset='UTF-8';
-  s1.setAttribute('crossorigin','*');
+  s1.crossOrigin='anonymous';
   s0.parentNode.insertBefore(s1,s0);
-})();
+});
 </script>
 <!-- End of Voice Agent Script -->`
+
   }, [agent?.id, hostUrl])
 
   const testUrl = useMemo(() => {

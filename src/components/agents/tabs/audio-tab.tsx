@@ -5,15 +5,15 @@ import type { AgentRecord } from "@/app/(admin)/(others-pages)/agent-setup/page"
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-6 rounded-xl border p-4">
-      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
+    <section className="mb-6 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
       {children}
     </section>
   )
 }
 
 function Help({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1 text-xs text-muted-foreground">{children}</p>
+  return <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{children}</p>
 }
 
 const LANGUAGES = [
@@ -88,9 +88,9 @@ const TTS_VOICES = {
     { value: "jane", label: "Jane" },
   ],
   google: [
-    { value: "en-US-Wavenet-D", label: "Wavenet D " },
+    { value: "en-US-Wavenet-D", label: "Wavenet D" },
     { value: "en-US-Wavenet-F", label: "Wavenet F" },
-    { value: "en-US-Neural2-C", label: "Neural2 C " },
+    { value: "en-US-Neural2-C", label: "Neural2 C" },
     { value: "en-US-Neural2-D", label: "Neural2 D" },
     { value: "en-IN-Chirp3-HD-Achernar", label: "Achernar HD" },
   ],
@@ -138,7 +138,7 @@ export default function AudioTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* ASR Provider */}
           <div>
-            <label className="block text-sm font-medium mb-2">Provider</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Provider</label>
             <select
               disabled={disabled}
               value={agent?.asrProvider?.toLowerCase() || "deepgram"}
@@ -163,7 +163,7 @@ export default function AudioTab({
 
           {/* ASR Model */}
           <div>
-            <label className="block text-sm font-medium mb-2">Model</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Model</label>
             <select
               disabled={disabled}
               value={agent?.asrModel || "nova-2"}
@@ -185,7 +185,7 @@ export default function AudioTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* TTS Provider */}
           <div>
-            <label className="block text-sm font-medium mb-2">Provider</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Provider</label>
             <select
               disabled={disabled}
               value={agent?.ttsProvider?.toLowerCase() || "openai"}
@@ -210,7 +210,7 @@ export default function AudioTab({
 
           {/* TTS Voice */}
           <div>
-            <label className="block text-sm font-medium mb-2">Voice</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Voice</label>
             <select
               disabled={disabled}
               value={agent?.ttsVoice || "alloy"}
@@ -229,7 +229,7 @@ export default function AudioTab({
         {/* TTS Model (for providers that support it) */}
         {currentTtsProvider === "elevenlabs" && (
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Model</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Model</label>
             <select
               disabled={disabled}
               value={agent?.ttsModel || "eleven_turbo_v2_5"}
@@ -249,7 +249,7 @@ export default function AudioTab({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Buffer Size */}
           <div>
-            <label className="block text-sm font-medium mb-2">Buffer Size (ms)</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Buffer Size (ms)</label>
             <div className="space-y-2">
               <input
                 type="range"
@@ -272,7 +272,7 @@ export default function AudioTab({
 
           {/* Speed Rate */}
           <div>
-            <label className="block text-sm font-medium mb-2">Speed Rate</label>
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Speed Rate</label>
             <div className="space-y-2">
               <input
                 type="range"

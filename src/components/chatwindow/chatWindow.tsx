@@ -10,7 +10,7 @@ import WaveAnimation from "../waveanimation/wave-animation"
 import AgentJoiningAnimation from "../agentjoininganimation/agent-joining-animation"
 
 interface ChatWindowProps {
-  assistantName: string
+  assistantName: "3-sales-agent-1761888217157"
   assistantRole: string
   livekitUrl: string
   roomName: string

@@ -4,139 +4,186 @@ import { useMemo, useState, useEffect } from "react"
 import Button from "@/components/ui/button/Button"
 import type { AgentRecord } from "@/app/(admin)/(others-pages)/agent-setup/page"
 
-function sanitize<T extends object>(obj: T) {
-  return JSON.parse(JSON.stringify(obj))
-}
-
-export default function WidgetTab({ agent }: { agent: AgentRecord | null }) {
-  const [hostUrl, setHostUrl] = useState("https://your-app.example.com")
+export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | null; disabled?: boolean }) {
+  const [hostUrl, setHostUrl] = useState("")
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location?.origin) {
-      setHostUrl((prev) => (prev.includes("your-app.example.com") ? window.location.origin : prev))
+      setHostUrl(window.location.origin)
     }
   }, [])
 
-  const embed = useMemo(() => {
-    const origin = hostUrl.replace(/\/$/, "")
-    const assistantId = agent?.id || "ASSISTANT_ID"
-    const orgId = agent?.orgId
+  const embedScript = useMemo(() => {
+    const origin = hostUrl || "https://your-domain.com"
+    const agentId = agent?.name || "AGENT_ID"
 
-    const qp = new URLSearchParams()
-    qp.set("assistantId", assistantId)
-    if (orgId) qp.set("orgId", orgId)
+return `<!-- Start of Voice Agent Script -->
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function() {
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='${origin}/embed.js';
+  s1.setAttribute('data-agent-id', '${agentId}');
+  s1.charset='UTF-8';
+  s1.crossOrigin='anonymous';
+  s0.parentNode.insertBefore(s1,s0);
+});
+</script>
+<!-- End of Voice Agent Script -->`
 
-    // Minimal snippet: create a floating launcher that opens /widget in a new tab
-    return ` Solvox AI Widget 
-<div id="solvox-widget-root"></div>
-<script>
-(function() {
-  var ROOT_ID = "solvox-widget-root";
-  var d = document;
-  var root = d.getElementById(ROOT_ID);
-  if (!root) {
-    root = d.createElement("div");
-    root.id = ROOT_ID;
-    d.body.appendChild(root);
-  }
+  }, [agent?.display_name, hostUrl])
 
-  var url = "${origin}/widget?${qp.toString()}";
+  const testUrl = useMemo(() => {
+    if (!hostUrl || !agent?.display_name) return ""
+    return `${hostUrl}/embed/test?agentId=${encodeURIComponent(agent.name)}`
+  }, [agent?.display_name, hostUrl])
 
-  var b = d.createElement("button");
-  b.type = "button";
-  b.setAttribute("aria-label", "Open AI Assistant");
-  b.style.position = "fixed";
-  b.style.bottom = "16px";
-  b.style.right = "16px";
-  b.style.zIndex = "2147483001";
-  b.style.width = "56px";
-  b.style.height = "56px";
-  b.style.borderRadius = "50%";
-  b.style.border = "none";
-  b.style.cursor = "pointer";
-  b.style.background = "#2563eb";
-  b.style.color = "#fff";
-  b.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)";
-  b.style.display = "flex";
-  b.style.alignItems = "center";
-  b.style.justifyContent = "center";
-  b.style.fontSize = "20px";
-  b.style.lineHeight = "1";
-  b.innerHTML = "💬";
-
-  b.addEventListener("click", function() {
+  async function copyToClipboard() {
     try {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e) {}
-  });
-
-  root.appendChild(b);
-})();
-</script>`
-  }, [agent?.id, agent?.orgId, hostUrl])
-
-  const previewUrl = useMemo(() => {
-    try {
-      const origin = hostUrl.replace(/\/$/, "")
-      const qp = new URLSearchParams()
-      const assistantId = agent?.id || "ASSISTANT_ID"
-      qp.set("assistantId", assistantId)
-      if (agent?.orgId) qp.set("orgId", agent.orgId)
-      return `${origin}/embed?${qp.toString()}`
-    } catch {
-      return ""
+      await navigator.clipboard.writeText(embedScript)
+    } catch (error) {
+      console.error("Failed to copy:", error)
     }
-  }, [agent?.id, agent?.orgId, hostUrl])
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(embed)
-    } catch {}
   }
 
   return (
-    <div className="space-y-3 rounded-xl border p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Widget</h3>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => previewUrl && window.open(previewUrl, "_blank", "noopener,noreferrer")}
-          >
-            Preview Widget
-          </Button>
-          <Button size="sm" variant="outline" onClick={copy}>
-            Copy Snippet
-          </Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Embed Script</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Add this script to any website to enable voice support widget
+          </p>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => testUrl && window.open(testUrl, "_blank", "noopener,noreferrer")}
+          disabled={!testUrl}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          ▶ Test Widget
+        </Button>
+      </div>
+
+      {/* Widget Features */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Widget Features</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Floating Button</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Elegant microphone icon at bottom-right</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Slide-in Panel</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Smooth animation from right side</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Voice Conversation</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Real-time AI voice interaction</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Mobile Responsive</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Optimized for all screen sizes</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-2">
-        <label className="text-xs text-muted-foreground dark:text-gray-300">Widget Host URL</label>
-        <input
-          value={hostUrl}
-          onChange={(e) => setHostUrl(e.target.value)}
-          placeholder="https://your-app.example.com"
-          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+      {/* Embed Code Section */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <code className="text-xs">&lt;&gt;</code> Embed Code
+          </h4>
+          <Button size="sm" variant="outline" onClick={copyToClipboard}>
+            📋 Copy Code
+          </Button>
+        </div>
+        <textarea
+          readOnly
+          value={embedScript}
+          rows={8}
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-xs font-mono"
         />
-        <p className="text-xs text-muted-foreground dark:text-gray-300">
-          The floating launcher opens a new tab at {"{host}/widget"} with the assistantId, ensuring the widget always
-          reflects live agent changes.
-        </p>
       </div>
 
-      <p className="text-xs text-muted-foreground dark:text-gray-300">
-        Paste this snippet into any website to show a floating launcher. Clicking it opens a full-page chatbot where you
-        can implement text and voice for the selected agent.
-      </p>
-
-      <textarea
-        readOnly
-        value={embed}
-        rows={12}
-        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm"
-      />
+      {/* Installation Instructions */}
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Installation Instructions</h4>
+        <ol className="space-y-3">
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+              1
+            </span>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Copy the embed script</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Click the "Copy Code" button above to copy the script to your clipboard
+              </p>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+              2
+            </span>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Paste into your website</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Add the script before the closing{" "}
+                <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">&lt;/body&gt;</code> tag in your
+                HTML
+              </p>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">
+              3
+            </span>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Test it out</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Reload your website and the voice widget button should appear at the bottom right
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
     </div>
   )
 }

@@ -29,11 +29,10 @@ function EmbedWidgetContent() {
   const { fetchConnectionDetails } = useConnectionDetails()
 
   useEffect(() => {
-    const aid = "Sales"
-    const name = searchParams.get("agentName") || "Anamika"
-    setAgentId(aid)
-    setAgentName(name)
-  }, [searchParams])
+    const displayName = searchParams.get("agentId") || "Sales";
+    setAgentId(displayName); // used for backend connection
+    setAgentName(displayName); // shown in UI
+  }, [searchParams]);
 
   const connectToAgent = useCallback(async () => {
     if (!agentId) return

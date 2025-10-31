@@ -31,9 +31,9 @@ export default function NewAgentModal({
     }
   }, [open])
 
-  const generateUniqueName = (orgId: string | number, displayname: string): string => {
+  const generateUniqueName = (orgId: string | number, display_name: string): string => {
     const timestamp = Date.now()
-    const sanitized = displayname
+    const sanitized = display_name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
@@ -47,7 +47,7 @@ export default function NewAgentModal({
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">
-            Assistant Display Name
+            Assistant Name
           </label>
           <input
             value={name}
@@ -102,7 +102,7 @@ export default function NewAgentModal({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   name: uniqueName,
-                  displayname: name.trim(),
+                  display_name: name.trim(),
                   description: desc.trim() || undefined,
                   organization_id: isNaN(orgIdNum) ? orgIdStr : orgIdNum,
                 }),

@@ -31,8 +31,8 @@ export default function AgentTab({
       <Section title="Agent Display Name">
         <input
           disabled={disabled}
-          value={agent?.displayname ?? ""}
-          onChange={(e) => onUpdate({ displayname: e.target.value })}
+          value={agent?.display_name ?? ""}
+          onChange={(e) => onUpdate({ display_name: e.target.value })}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="My AI Assistant"
         />

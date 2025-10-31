@@ -33,17 +33,17 @@ const navItems: NavItem[] = [
     path: "/",
   },
     {
-    icon: <UserCircleIcon />,
+    icon: <GridIcon />,
     name: "Agent Setup",
     path: "/agent-setup",
   },
-  {
-    icon: <GridIcon />,
-    name: "Platform",
-    subItems: [{ name: "Assistants", path: "/platform/assistants", pro: false },
-    // { name: "Phone Numbers", path: "/platform/phone-numbers", pro: false }
-    ],
-  },
+  // {
+  //   icon: <GridIcon />,
+  //   name: "Platform",
+  //   subItems: [{ name: "Assistants", path: "/platform/assistants", pro: false },
+  //   // { name: "Phone Numbers", path: "/platform/phone-numbers", pro: false }
+  //   ],
+  // },
    {
     icon: <UserCircleIcon />,
     name: "Users",

@@ -15,7 +15,7 @@ export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | nu
 
   const embedScript = useMemo(() => {
     const origin = hostUrl || "https://your-domain.com"
-    const agentId = agent?.id || "AGENT_ID"
+    const agentId = agent?.name || "AGENT_ID"
 
 return `<!-- Start of Voice Agent Script -->
 <script type="text/javascript">
@@ -31,12 +31,12 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 <!-- End of Voice Agent Script -->`
 
-  }, [agent?.id, hostUrl])
+  }, [agent?.display_name, hostUrl])
 
   const testUrl = useMemo(() => {
-    if (!hostUrl || !agent?.id) return ""
-    return `${hostUrl}/embed/test?agentId=${encodeURIComponent(agent.id)}`
-  }, [agent?.id, hostUrl])
+    if (!hostUrl || !agent?.display_name) return ""
+    return `${hostUrl}/embed/test?agentId=${encodeURIComponent(agent.name)}`
+  }, [agent?.display_name, hostUrl])
 
   async function copyToClipboard() {
     try {

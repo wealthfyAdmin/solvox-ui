@@ -8,10 +8,10 @@ import AgentTabs from "@/components/agents/agent-tabs"
 import PageBreadcrumb from "@/components/common/PageBreadCrumb"
 import DeleteAgentModal from "@/components/agents/delete-agent-modal"
 import ChatDrawer from "@/components/agents/chat-drawer"
-import WebCallModal from "@/components/agents/web-call-modal"
 import CreateOrganizationModal from "@/components/agents/create-organization-modal"
 import DeleteOrganizationModal from "@/components/agents/delete-organization-modal"
 import VoiceCallModal from "@/components/agents/voice-call-modal"
+import OutboundCallButton from "@/components/header/NotificationDropdown"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
@@ -26,10 +26,10 @@ type CostBreakdown = {
 export type AgentRecord = {
   id: string
   name: string
-  displayname?: string
+  display_name?: string
   description?: string
   welcomeMessage?: string
-  prompt?: string
+  instructions?: string
   llmProvider?: string
   llmModel?: string
   llmTokens?: number
@@ -257,10 +257,10 @@ export default function AgentSetupPage(disabled?: boolean) {
     const newAgent: AgentRecord = {
       id,
       name: name.trim() || "Untitled Agent",
-      displayname: name.trim() || "Untitled Agent",
+      display_name: name.trim() || "Untitled Agent",
       description: description?.trim(),
       welcomeMessage: "Hello from Solvox",
-      prompt: "You are a helpful AI assistant.",
+      instructions: "You are a helpful AI assistant.",
       llmProvider: "OpenAI",
       llmModel: "gpt-4o-mini",
       llmTokens: 450,
@@ -361,6 +361,8 @@ export default function AgentSetupPage(disabled?: boolean) {
       </div>
     )
   }
+
+  console.log("Rendering AgentSetupPage with agents:", agents)
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -530,6 +532,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                 </Button>
               </div>
 
+              
               {/* Agents list */}
               <ul className="mt-4 space-y-1">
                 {agents
@@ -552,7 +555,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                         aria-current={selectedId === a.id ? "true" : undefined}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="truncate">{a.name}</span>
+                          <span className="truncate">{a.display_name}</span>
                           <button
                             className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-500"
                             onClick={(e) => {
@@ -591,10 +594,10 @@ export default function AgentSetupPage(disabled?: boolean) {
                     String((a as any).orgId) === String(selectedOrgId) ||
                     String((a as any).organization_id) === String(selectedOrgId),
                 ).length === 0 && (
-                  <li className="text-sm text-muted-foreground text-center dark:text-gray-300">
-                    {selectedOrgId ? "No agents yet" : "Select organization"}
-                  </li>
-                )}
+                    <li className="text-sm text-muted-foreground text-center dark:text-gray-300">
+                      {selectedOrgId ? "No agents yet" : "Select organization"}
+                    </li>
+                  )}
               </ul>
             </aside>
 
@@ -628,9 +631,9 @@ export default function AgentSetupPage(disabled?: boolean) {
                     {/* Input */}
                     <input
                       className="w-full max-w-xl rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-lg font-semibold outline-none focus:ring-2 focus:ring-blue-500"
-                      value={selected?.displayname ?? ""}
+                      value={selected?.display_name ?? ""}
                       placeholder="Agent name"
-                      onChange={(e) => handleUpdateAgent({ displayname: e.target.value })}
+                      onChange={(e) => handleUpdateAgent({ display_name: e.target.value })}
                       disabled={disabled}
                     />
 
@@ -653,7 +656,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                         </div>
 
                         {/* Web Call (not inside inner flex) */}
-                        <Button size="sm" className="w-full " onClick={() => setWebCallOpen(true)} disabled={!selected}>
+                        <Button size="sm" className="w-full" onClick={() => setWebCallOpen(true)} disabled={!selected}>
                           Web Call
                         </Button>
                       </div>
@@ -756,13 +759,28 @@ export default function AgentSetupPage(disabled?: boolean) {
               }
             }}
           />
-          <ChatDrawer open={chatOpen} onClose={() => setChatOpen(false)} agentName={selected?.name ?? "Assistant"} />
-          <WebCallModal open={webCallOpen} onClose={() => setWebCallOpen(false)} />
+          <ChatDrawer
+            open={chatOpen}
+            onClose={() => setChatOpen(false)}
+            agentName={selected?.name ?? "Assistant"}
+            agentId={selected?.name ?? ""}
+            display_name={selected?.display_name ?? ""}
+          />
+
+
+          {webCallOpen && (
+            <OutboundCallButton
+              open={webCallOpen}
+              onClose={() => setWebCallOpen(false)}
+              name={selected?.display_name ?? selected?.name ?? "AI Agent"}
+            />
+          )}
           <VoiceCallModal
             open={voiceCallOpen}
             onClose={() => setVoiceCallOpen(false)}
-            agentName={selected?.name ?? "Assistant"}
-            agentId={selected?.id ?? ""}
+            agentname={selected?.name ?? "Assistant"}
+            agentID={selected?.name ?? ""}
+            display_name={selected?.display_name ?? ""}
           />
         </div>
       </div>

@@ -9,9 +9,10 @@ interface VoiceStateProps {
   room: Room
   agentName: string
   onEndCall: () => void
+  display_name?: string
 }
 
-export default function VoiceState({ room, agentName, onEndCall }: VoiceStateProps) {
+export default function VoiceState({ room, agentName, onEndCall, display_name }: VoiceStateProps) {
   const { state } = useVoiceAssistant()
 
   // Enable mic automatically on entering voice mode
@@ -43,7 +44,7 @@ export default function VoiceState({ room, agentName, onEndCall }: VoiceStatePro
 
       {/* Agent Info */}
       <div className="absolute top-8 text-center">
-        <h2 className="text-lg font-semibold">{agentName}</h2>
+        <h2 className="text-lg font-semibold">{ display_name}</h2>
         <p className="text-xs text-gray-500">Voice Session Active</p>
       </div>
 

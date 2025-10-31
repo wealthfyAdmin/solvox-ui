@@ -19,11 +19,12 @@ interface ChatStateProps {
   room: Room
   onStartVoice: () => void
   onEndCall: () => void
+  display_name?: string
 }
 
 const isUserMessage = (msg: Message) => msg.sender === "user"
 
-function ChatMessage({ message, agentName }: { message: Message; agentName: string }) {
+function ChatMessage({ message, agentName, display_name }: { message: Message; agentName: string; display_name?: string }) {
   const isOwn = isUserMessage(message)
 
   return (
@@ -34,7 +35,7 @@ function ChatMessage({ message, agentName }: { message: Message; agentName: stri
             <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-bold">AI</span>
             </div>
-            <span className="text-xs font-medium text-gray-600">{agentName}</span>
+            <span className="text-xs font-medium text-gray-600">{display_name}</span>
           </div>
         )}
 
@@ -182,13 +183,13 @@ export default function ChatState({ agentName, room, onStartVoice, onEndCall }: 
               placeholder="Type your message..."
               className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <button
+            {/* <button
               onClick={onStartVoice}
               className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
               title="Switch to voice chat"
             >
               <Mic className="w-5 h-5 text-gray-700" />
-            </button>
+            </button> */}
             <button
               onClick={() => sendMessage(inputText)}
               disabled={!inputText.trim()}

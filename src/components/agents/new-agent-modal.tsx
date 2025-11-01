@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Modal } from "@/components/ui/modal"
 import Button from "../ui/button/Button"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 export default function NewAgentModal({
   open,
@@ -96,7 +96,7 @@ export default function NewAgentModal({
 
               const uniqueName = generateUniqueName(orgIdNum, name.trim())
 
-              const res = await fetch(`${BACKEND_URL}/api/agent`, {
+              const res = await fetch(`/api/agents`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },

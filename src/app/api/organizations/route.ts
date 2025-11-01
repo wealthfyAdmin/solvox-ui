@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 async function getAuthHeaders(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
@@ -22,8 +22,9 @@ async function getAuthHeaders(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const headers = await getAuthHeaders(req)
-    // trailing slash to avoid backend redirects
-    const response = await fetch(`${BACKEND_URL}/api/organization/`, { headers })
+
+    // ✅ Fetch organizations from backend
+    const response = await fetch(`${BACKEND_URL}/api/organization/?skip=0&limit=100`, { headers })
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "")
@@ -31,13 +32,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ organizations: [] }, { status: 200 })
     }
 
-    const backendOrganizations = await response.json()
-    const organizations = (backendOrganizations || []).map((org: any) => ({
+    // ✅ Parse JSON and extract 'organizations' array
+    const backendData = await response.json()
+    const backendOrganizations = backendData.organizations || []
+
+    const organizations = backendOrganizations.map((org: any) => ({
       id: String(org.id),
       name: org.name,
       description: org.description,
       created_at: org.created_at,
       updated_at: org.updated_at,
+      is_active: org.is_active,
+      keys: org.keys,
     }))
 
     return NextResponse.json({ organizations })
@@ -52,7 +58,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const headers = await getAuthHeaders(req)
 
-    // Only send what backend expects
+    // ✅ Send only expected fields
     const organizationData = {
       name: body?.name,
       description: body?.description ?? null,

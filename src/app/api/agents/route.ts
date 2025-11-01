@@ -1,59 +1,69 @@
 import { NextResponse } from "next/server"
 
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
+
+// ✅ GET — Fetch agents by organization_id
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url)
+    const organizationId = url.searchParams.get("organization_id")
+
+    if (!organizationId) {
+      return NextResponse.json({ error: "organization_id is required" }, { status: 400 })
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/agent?organization_id=${organizationId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: request.headers.get("cookie") || "",
+        authorization: request.headers.get("authorization") || "",
+      },
+      credentials: "include",
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "")
+      console.error("[GET /api/agents] Backend error:", response.status, errorText)
+      return NextResponse.json({ error: "Failed to fetch agents" }, { status: response.status })
+    }
+
+    const data = await response.json()
+    return NextResponse.json(data)
+  } catch (err: any) {
+    console.error("[GET /api/agents] Error:", err)
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 })
+  }
+}
+
+// ✅ POST — Create new agent
 export async function POST(request: Request) {
   try {
     const incoming = await request.json().catch(() => ({}))
-    const name = typeof incoming?.name === "string" ? incoming.name : ""
-    const description = typeof incoming?.description === "string" ? incoming.description : undefined
-    let organization_id = typeof incoming?.organization_id === "number" ? incoming.organization_id : undefined
+    const { name, display_name, description, organization_id } = incoming || {}
 
-    if (!name) {
-      return NextResponse.json({ error: "name is required" }, { status: 400 })
-    }
-
-    const backend = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
-
-    // Try to infer organization_id from authenticated user if not provided
-    if (organization_id == null) {
-      try {
-        const meRes = await fetch(`${backend}/auth/me`, {
-          method: "GET",
-          headers: {
-            // forward auth headers/cookies
-            cookie: request.headers.get("cookie") || "",
-            authorization: request.headers.get("authorization") || "",
-          },
-        })
-        if (meRes.ok) {
-          const me = await meRes.json().catch(() => ({}))
-          const inferred =
-            typeof me?.user?.organization_id === "number"
-              ? me.user.organization_id
-              : typeof me?.organization_id === "number"
-                ? me.organization_id
-                : undefined
-          if (typeof inferred === "number") {
-            organization_id = inferred
-          }
-        }
-      } catch {
-        // ignore inference failure, we'll proceed without it
-      }
+    if (!name || !organization_id) {
+      return NextResponse.json(
+        { error: "name and organization_id are required" },
+        { status: 400 }
+      )
     }
 
     const payload = {
       name,
+      display_name,
       description,
       organization_id,
     }
 
-    const upstream = await fetch(`${backend}/agent`, {
+    const upstream = await fetch(`${BACKEND_URL}/api/agent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         cookie: request.headers.get("cookie") || "",
         authorization: request.headers.get("authorization") || "",
       },
+      credentials: "include",
       body: JSON.stringify(payload),
     })
 
@@ -65,8 +75,17 @@ export async function POST(request: Request) {
       data = { raw: text }
     }
 
+    if (!upstream.ok) {
+      console.error("[POST /api/agents] Backend error:", data)
+      return NextResponse.json(
+        { error: data?.error || "Failed to create agent" },
+        { status: upstream.status }
+      )
+    }
+
     return NextResponse.json(data, { status: upstream.status })
   } catch (err: any) {
+    console.error("[POST /api/agents] Error:", err)
     return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 })
   }
 }

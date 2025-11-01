@@ -133,7 +133,7 @@ export default function AgentSetupPage(disabled?: boolean) {
     const loadCurrentUser = async () => {
       try {
         setUserLoading(true)
-        const res = await fetch("/api/auth/me", { credentials: "include" })
+        const res = await fetch("/api/auth/user", { credentials: "include" })
         if (res.ok) {
           const userData = await res.json()
           setCurrentUser(userData.user || userData)
@@ -157,7 +157,7 @@ export default function AgentSetupPage(disabled?: boolean) {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${BACKEND_URL}/api/organization/?skip=0&limit=100`, { credentials: "include" })
+      const res = await fetch(`/api/organizations`, { credentials: "include" })
       if (!res.ok) throw new Error("Failed to fetch organizations")
       const data = await res.json()
       const list = data.organizations || []
@@ -205,7 +205,7 @@ export default function AgentSetupPage(disabled?: boolean) {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(`${BACKEND_URL}/api/agent?organization_id=${selectedOrgId}`, { credentials: "include" })
+        const res = await fetch(`/api/agents?organization_id=${selectedOrgId}`, { credentials: "include" })
         if (res.ok) {
           const data = await res.json()
           console.log("Fetched agents:", data)
@@ -297,7 +297,7 @@ export default function AgentSetupPage(disabled?: boolean) {
       setLoading(true)
       setError(null)
 
-      const res = await fetch(`${BACKEND_URL}/api/agent/${encodeURIComponent(agentToDelete.id)}`, {
+      const res = await fetch(`/api/agents/${encodeURIComponent(agentToDelete.id)}`, {
         method: "DELETE",
         credentials: "include",
       })
@@ -351,7 +351,7 @@ export default function AgentSetupPage(disabled?: boolean) {
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">Please log in to access your workspace.</p>
             <button
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => (window.location.href = "/signin")}
               className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
               Go to Login
@@ -690,7 +690,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                 </div>
 
                 {/* Tabs and content */}
-                <div className="rounded-xl border bg-card">
+                <div className="rounded-xl  bg-card">
                   <AgentTabs
                     agent={selected}
                     onUpdate={handleUpdateAgent}
@@ -738,7 +738,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                 }
                 setLoading(true)
                 setError(null)
-                const res = await fetch(`${BACKEND_URL}/api/organization/${encodeURIComponent(selectedOrgId)}`, {
+                const res = await fetch(`/api/organizations/${encodeURIComponent(selectedOrgId)}`, {
                   method: "DELETE",
                   credentials: "include",
                 })

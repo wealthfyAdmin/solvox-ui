@@ -1,18 +1,33 @@
 /**
  * Voice Agent Embed Widget
- * Fixed collapse/reopen issue (safe re-binding)
+ * ✅ Production-ready (auto detects local vs live, HTTPS enforced)
  */
 
 ;(() => {
   const scripts = document.getElementsByTagName("script");
   const currentScript = scripts[scripts.length - 1];
-  const scriptSrc = currentScript.src;
-  let baseUrl = "https://solvoxpoc.techpixel.co.in";
-  let agentId = currentScript?.getAttribute("data-agent-id") || null;
+  const scriptSrc = currentScript?.src || "";
+  const scriptUrl = new URL(scriptSrc, window.location.origin);
 
-  if (scriptSrc) {
-    const url = new URL(scriptSrc);
-    baseUrl = url.origin;
+  // ✅ Default base URL for production
+  let baseUrl = "https://solvoxpoc.techpixel.co.in";
+  const agentId = currentScript?.getAttribute("data-agent-id") || null;
+
+  // ✅ Detect local environment automatically
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  if (isLocal) {
+    baseUrl = "http://localhost:3000";
+  } else {
+    // If current script not from solvoxpoc.techpixel.co.in, still force HTTPS
+    const origin = scriptUrl.origin || "";
+    if (!origin.includes("solvoxpoc.techpixel.co.in")) {
+      baseUrl = "https://solvoxpoc.techpixel.co.in";
+    }
+  }
+
+  // ✅ Normalize protocol to always HTTPS for production
+  if (!isLocal && baseUrl.startsWith("http://")) {
+    baseUrl = baseUrl.replace("http://", "https://");
   }
 
   const config = {
@@ -168,8 +183,12 @@
       }
       this.iframe = document.createElement("iframe");
       this.iframe.id = config.iframeId;
+
+      // ✅ Use environment-aware URL
       let iframeUrl = `${config.baseUrl}/widget/test/`;
-      if (config.agentId) iframeUrl += `?agentId=${encodeURIComponent(config.agentId)}`;
+      if (config.agentId)
+        iframeUrl += `?agentId=${encodeURIComponent(config.agentId)}`;
+
       this.iframe.src = iframeUrl;
       this.iframe.allow = "microphone; camera; autoplay";
       this.iframe.allowFullscreen = true;

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 async function getAuthHeaders(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
@@ -19,69 +19,84 @@ async function getAuthHeaders(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+// ✅ GET single organization by ID
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const headers = await getAuthHeaders(req)
-    // trailing slash to avoid backend redirects
-    const response = await fetch(`${BACKEND_URL}/api/organization/`, { headers })
+    const { id } = params
 
+    const response = await fetch(`${BACKEND_URL}/api/organization/${id}`, { headers })
     if (!response.ok) {
       const errorText = await response.text().catch(() => "")
-      console.error("[v0] Organizations backend error:", response.status, errorText)
-      return NextResponse.json({ organizations: [] }, { status: 200 })
+      console.error("[v0] GET organization error:", response.status, errorText)
+      return NextResponse.json({ error: "Failed to fetch organization" }, { status: response.status })
     }
 
-    const backendOrganizations = await response.json()
-    const organizations = (backendOrganizations || []).map((org: any) => ({
-      id: String(org.id),
-      name: org.name,
-      description: org.description,
-      created_at: org.created_at,
-      updated_at: org.updated_at,
-    }))
-
-    return NextResponse.json({ organizations })
+    const org = await response.json()
+    return NextResponse.json(org)
   } catch (err) {
-    console.error("[v0] Error fetching organizations:", err)
-    return NextResponse.json({ organizations: [] }, { status: 200 })
+    console.error("[v0] Error fetching organization:", err)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
-export async function POST(req: NextRequest) {
+// ✅ DELETE organization by ID
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const body = await req.json().catch(() => ({}))
     const headers = await getAuthHeaders(req)
+    const { id } = params
 
-    // Only send what backend expects
-    const organizationData = {
-      name: body?.name,
-      description: body?.description ?? null,
+    if (!id) {
+      return NextResponse.json({ error: "Organization ID is required" }, { status: 400 })
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/organization/`, {
-      method: "POST",
+    const response = await fetch(`${BACKEND_URL}/api/organization/${id}`, {
+      method: "DELETE",
       headers,
-      body: JSON.stringify(organizationData),
     })
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "")
-      console.error("[v0] Create organization backend error:", response.status, errorText)
-      return NextResponse.json({ error: "Failed to create organization" }, { status: response.status || 500 })
+      console.error("[v0] Delete organization backend error:", response.status, errorText)
+      return NextResponse.json(
+        { error: "Failed to delete organization" },
+        { status: response.status || 500 }
+      )
     }
 
-    const created = await response.json()
-    const organization = {
-      id: String(created.id),
-      name: created.name,
-      description: created.description,
-      created_at: created.created_at,
-      updated_at: created.updated_at,
-    }
-
-    return NextResponse.json({ organization })
+    return NextResponse.json({ success: true, message: "Organization deleted successfully" })
   } catch (err) {
-    console.error("[v0] Error creating organization:", err)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("[v0] Error deleting organization:", err)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
+}
+
+// ✅ PATCH — Update organization
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const headers = await getAuthHeaders(req)
+    const { id } = params
+    const body = await req.json().catch(() => ({}))
+
+    const response = await fetch(`${BACKEND_URL}/api/organization/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "")
+      console.error("[v0] Update organization backend error:", response.status, errorText)
+      return NextResponse.json(
+        { error: "Failed to update organization" },
+        { status: response.status || 500 }
+      )
+    }
+
+    const updated = await response.json()
+    return NextResponse.json(updated)
+  } catch (err) {
+    console.error("[v0] Error updating organization:", err)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

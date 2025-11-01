@@ -13,16 +13,22 @@ export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | nu
     }
   }, [])
 
-  const embedScript = useMemo(() => {
-    const origin = hostUrl || "https://your-domain.com"
-    const agentId = agent?.name || "AGENT_ID"
+  // ✅ Automatically switch between local & live environment
+ const embedScript = useMemo(() => {
+  // Always use production URL for external embeds
+  const isLocalAdmin = hostUrl.includes("localhost") || hostUrl.includes("127.0.0.1")
+  const origin = isLocalAdmin ? "http://localhost:3000" : "https://solvoxpoc.techpixel.co.in"
+  const agentId = agent?.name || "AGENT_ID"
 
-return `<!-- Start of Voice Agent Script -->
+  // When generating embed script, always use production host
+  const scriptOrigin = "https://solvoxpoc.techpixel.co.in"
+
+  return `<!-- Start of Voice Agent Script -->
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function() {
   var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
   s1.async=true;
-  s1.src='${origin}/embed.js';
+  s1.src='${scriptOrigin}/embed.js';
   s1.setAttribute('data-agent-id', '${agentId}');
   s1.charset='UTF-8';
   s1.crossOrigin='anonymous';
@@ -30,13 +36,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 <!-- End of Voice Agent Script -->`
+}, [agent?.name, hostUrl])
 
-  }, [agent?.display_name, hostUrl])
 
   const testUrl = useMemo(() => {
-    if (!hostUrl || !agent?.display_name) return ""
+    if (!hostUrl || !agent?.name) return ""
     return `${hostUrl}/embed/test?agentId=${encodeURIComponent(agent.name)}`
-  }, [agent?.display_name, hostUrl])
+  }, [agent?.name, hostUrl])
 
   async function copyToClipboard() {
     try {
@@ -66,65 +72,6 @@ document.addEventListener("DOMContentLoaded", function() {
         </Button>
       </div>
 
-      {/* Widget Features */}
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Widget Features</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Floating Button</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Elegant microphone icon at bottom-right</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Slide-in Panel</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Smooth animation from right side</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Voice Conversation</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Real-time AI voice interaction</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Mobile Responsive</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Optimized for all screen sizes</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Embed Code Section */}
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center justify-between mb-3">
@@ -132,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <code className="text-xs">&lt;&gt;</code> Embed Code
           </h4>
           <Button size="sm" variant="outline" onClick={copyToClipboard}>
-            📋 Copy Code
+            Copy Code
           </Button>
         </div>
         <textarea

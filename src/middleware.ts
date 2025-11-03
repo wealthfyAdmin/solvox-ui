@@ -1,31 +1,35 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const authRoutes = ["/signin"]
+// Routes that don't require authentication
+const publicRoutes = ["/signin", "/signup", "/reset-password", "/api/auth/signin"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const sessionCookie = request.cookies.get("session")
-  const isAuthenticated = !!sessionCookie?.value
+  const accessToken = request.cookies.get("access_token")?.value
 
-  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
-  const isProtectedRoute = !isAuthRoute // all non-auth pages are protected
+  console.log("Middleware check for path:", accessToken)
 
-  // if (isProtectedRoute && !isAuthenticated) {
-  //   const signInUrl = new URL("/signin", request.url)
-  //   signInUrl.searchParams.set("callbackUrl", pathname)
-  //   return NextResponse.redirect(signInUrl)
-  // }
+  // Allow public routes
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next()
+  }
 
-  // if (isAuthRoute && isAuthenticated) {
-  //   return NextResponse.redirect(new URL("/", request.url))
-  // }
+  if (!accessToken) {
+    return NextResponse.redirect(new URL("/signin", request.url))
+  }
 
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
 }
-

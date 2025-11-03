@@ -1,3 +1,4 @@
+
 /**
  * Voice Agent Embed Widget
  * ✅ Production-ready (auto detects local vs live, HTTPS enforced)
@@ -10,18 +11,18 @@
   const scriptUrl = new URL(scriptSrc, window.location.origin);
 
   // ✅ Default base URL for production
-  let baseUrl = "http://localhost:3000";
+  let baseUrl = "https://app.solvox.ai";
   const agentId = currentScript?.getAttribute("data-agent-id") || null;
 
   // ✅ Detect local environment automatically
   const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
   if (isLocal) {
-    baseUrl = "http://localhost:3000";
+    baseUrl = "https://app.solvox.ai";
   } else {
     // If current script not from solvoxpoc.techpixel.co.in, still force HTTPS
     const origin = scriptUrl.origin || "";
-    if (!origin.includes("http://localhost:3000")) {
-      baseUrl = "http://localhost:3000";
+    if (!origin.includes("https://app.solvox.ai")) {
+      baseUrl = "https://app.solvox.ai";
     }
   }
 
@@ -156,7 +157,7 @@
       video.loop = true;
       video.muted = true;
       video.playsInline = true;
-      video.innerHTML = `<source src="/images/embed/4886443_Business_Woman_Young_3840x2160.mp4" type="video/mp4">`;
+      video.innerHTML = `<source src="https://app.solvox.ai/images/embed/4886443_Business_Woman_Young_3840x2160.mp4" type="video/mp4">`;
 
       const close = document.createElement("button");
       close.id = "voice-agent-close";

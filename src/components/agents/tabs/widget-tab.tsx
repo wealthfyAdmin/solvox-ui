@@ -17,11 +17,11 @@ export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | nu
  const embedScript = useMemo(() => {
   // Always use production URL for external embeds
   const isLocalAdmin = hostUrl.includes("localhost") || hostUrl.includes("127.0.0.1")
-  const origin = isLocalAdmin ? "http://localhost:3000" : "https://solvox-ui-464m.vercel.app"
+  const origin = isLocalAdmin ? "http://localhost:3000" : "https://app.solvox.ai"
   const agentId = agent?.name || "AGENT_ID"
 
   // When generating embed script, always use production host
-  const scriptOrigin = "https://solvox-ui-464m.vercel.app"
+  const scriptOrigin = "https://app.solvox.ai"
 
   return `<!-- Start of Voice Agent Script -->
 <script type="text/javascript">

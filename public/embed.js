@@ -10,7 +10,7 @@
   const scriptUrl = new URL(scriptSrc, window.location.origin);
 
   // ✅ Default base URL for production
-  let baseUrl = "https://solvoxpoc.techpixel.co.in";
+  let baseUrl = "http://localhost:3000";
   const agentId = currentScript?.getAttribute("data-agent-id") || null;
 
   // ✅ Detect local environment automatically
@@ -20,8 +20,8 @@
   } else {
     // If current script not from solvoxpoc.techpixel.co.in, still force HTTPS
     const origin = scriptUrl.origin || "";
-    if (!origin.includes("solvoxpoc.techpixel.co.in")) {
-      baseUrl = "https://solvoxpoc.techpixel.co.in";
+    if (!origin.includes("http://localhost:3000")) {
+      baseUrl = "http://localhost:3000";
     }
   }
 

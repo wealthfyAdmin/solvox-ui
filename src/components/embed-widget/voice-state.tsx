@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Room } from "livekit-client"
 import { useVoiceAssistant, RoomAudioRenderer } from "@livekit/components-react"
-import { PhoneOff } from "lucide-react"
+import { PhoneOff, Mic, MicOff } from "lucide-react"
 
 interface VoiceStateProps {
   room: Room
@@ -14,6 +14,7 @@ interface VoiceStateProps {
 
 export default function VoiceState({ room, agentName, onEndCall, display_name }: VoiceStateProps) {
   const { state } = useVoiceAssistant()
+  const [isMuted, setIsMuted] = useState(false)
 
   // Enable mic automatically on entering voice mode
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
       try {
         await room.localParticipant.setMicrophoneEnabled(true)
         console.log("[VoiceState] Microphone enabled.")
+        setIsMuted(false)
       } catch (err) {
         console.error("[VoiceState] Failed to enable microphone:", err)
       }
@@ -28,11 +30,22 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
     enableMic()
   }, [room])
 
-  // Disconnect & collapse widget when ending call
+  // Toggle Mute / Unmute
+  const toggleMute = async () => {
+    try {
+      const newMuteState = !isMuted
+      await room.localParticipant.setMicrophoneEnabled(!newMuteState)
+      setIsMuted(newMuteState)
+      console.log(`[VoiceState] Microphone ${newMuteState ? "muted" : "unmuted"}.`)
+    } catch (err) {
+      console.error("[VoiceState] Error toggling mute:", err)
+    }
+  }
+
+  // End call & notify parent
   const handleEndCall = () => {
     console.log("[VoiceState] Ending voice session and collapsing.")
     room.disconnect()
-    // Notify parent embed to collapse and reset session
     window.parent.postMessage({ type: "VOICE_AGENT_END_SESSION" }, "*")
     onEndCall()
   }
@@ -44,7 +57,7 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
 
       {/* Agent Info */}
       <div className="absolute top-8 text-center">
-        <h2 className="text-lg font-semibold">{ display_name}</h2>
+        <h2 className="text-lg font-semibold">{display_name}</h2>
         <p className="text-xs text-gray-500">Voice Session Active</p>
       </div>
 
@@ -68,18 +81,34 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
         </div>
       </div>
 
-      {/* End Call Button */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+      {/* Control Buttons */}
+      <div className="absolute bottom-10 flex items-center gap-3">
+        {/* Mute / Unmute */}
+        <button
+          onClick={toggleMute}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-transform duration-200 hover:scale-105 ${
+            isMuted ? "bg-gray-300 hover:bg-gray-400" : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          {isMuted ? (
+            <MicOff className="w-7 h-7 text-white" />
+          ) : (
+            <Mic className="w-7 h-7 text-white" />
+          )}
+        </button>
+
+        {/* End Call */}
         <button
           onClick={handleEndCall}
-          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-xl transition-transform duration-200 hover:scale-105"
+          className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-xl transition-transform duration-200 hover:scale-105"
         >
           <PhoneOff className="w-8 h-8 text-white" />
         </button>
       </div>
 
-      <p className="absolute bottom-3 text-xs text-gray-500">Tap to end call</p>
+      <p className="absolute bottom-3 text-xs text-gray-500">Tap red to end call • Green to mute/unmute</p>
 
+      {/* Styles */}
       <style jsx global>{`
         .voice-wave {
           display: flex;

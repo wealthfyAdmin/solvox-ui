@@ -24,7 +24,7 @@ export default function UserDropdown() {
     const data = await res.json();
 
     if (data.success) {
-      router.push("/signup"); // redirect after cookie removal
+      router.push("/signin"); // redirect after cookie removal
     } else {
       console.error("Sign out failed:", data.error);
     }

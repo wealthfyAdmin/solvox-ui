@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-const LOGIN_API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+
+const LOGIN_API_URL = `${BACKEND_URL}/api/login`
 
 export async function POST(request: NextRequest) {
   try {

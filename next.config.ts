@@ -1,17 +1,26 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ✅ Allow build even if TypeScript errors exist
   typescript: {
     ignoreBuildErrors: true,
   },
-
-  // ✅ Allow build even if ESLint errors exist
   eslint: {
     ignoreDuringBuilds: true,
   },
 
-  // ✅ Keep your SVG handling config
+  async headers() {
+    return [
+      {
+        source: "/embed.js",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+        ],
+      },
+    ];
+  },
+
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,

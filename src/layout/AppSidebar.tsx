@@ -44,11 +44,11 @@ const navItems: NavItem[] = [
   //   // { name: "Phone Numbers", path: "/platform/phone-numbers", pro: false }
   //   ],
   // },
-   {
-    icon: <UserCircleIcon />,
-    name: "Users",
-    path: "/users",
-  },
+  //  {
+  //   icon: <UserCircleIcon />,
+  //   name: "Users",
+  //   path: "/users",
+  // },
   // {
   //   icon: <PageIcon />,
   //   name: "Call Logs",

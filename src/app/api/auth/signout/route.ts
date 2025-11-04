@@ -1,15 +1,16 @@
-// /app/api/signout/route.ts (Next.js 13+ app router)
+
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const response = NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true, message: "Signed out successfully" });
 
-  // Remove the session cookie
-  response.cookies.set("session", "", {
+ 
+  response.cookies.set("access_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    expires: new Date(0), // expire immediately
+    secure: process.env.NODE_ENV === "production", 
+    sameSite: "lax", 
+    path: "/", 
+    expires: new Date(0), 
   });
 
   return response;

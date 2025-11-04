@@ -167,7 +167,7 @@
       overlay.id = "voice-agent-overlay";
       overlay.innerHTML = `
         <button id="voice-agent-button">Talk to Anamika</button>
-        <div id="voice-agent-footer">Powered by Lumiverse Solutions</div>
+        <div id="voice-agent-footer">Powered by Solvox AI</div>
       `;
 
       this.container.append(video, overlay, close);
@@ -265,7 +265,7 @@
       this.videoOverlay.style.display = "flex";
       this.videoOverlay.innerHTML = `
         <button id="voice-agent-button">Talk to Anamika</button>
-        <div id="voice-agent-footer">Powered by Lumiverse Solutions</div>
+        <div id="voice-agent-footer">Powered by Solvox AI</div>
       `;
 
       this.button = this.videoOverlay.querySelector("#voice-agent-button");

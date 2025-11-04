@@ -414,7 +414,7 @@ export default function AgentSetupPage(disabled?: boolean) {
               ref={dropdownRef}
             >
               <div className="mb-3">
-                <h2 className="text-sm font-semibold text-muted-foreground dark:text-gray-200">Your Agents</h2>
+                <h2 className="text-sm font-semibold text-muted-foreground dark:text-gray-200">Select Your Organizations</h2>
               </div>
 
               {/* Organization selector - shown for superadmin to preserve existing role-based behavior */}

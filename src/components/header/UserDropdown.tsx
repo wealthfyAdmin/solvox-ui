@@ -21,6 +21,7 @@ export default function UserDropdown() {
  const handleSignOut = async () => {
   try {
     const res = await fetch("/api/auth/signout", { method: "POST" });
+    localStorage.removeItem("access_token");
     const data = await res.json();
 
     if (data.success) {

@@ -28,10 +28,10 @@ export default function WidgetTestPage() {
           alt="Lumiverse Solutions Logo"
           className="w-28 h-auto mx-auto drop-shadow-md sm:w-36"
         />
-<p className="text-white/70 text-sm italic mt-1">Voice Agent Widget Demo</p>
+        <p className="text-white/70 text-sm italic mt-1">Voice Agent Widget Demo</p>
       </div>
 
-      {/* --- Centered Instruction and Fancy Arrow --- */}
+      
       <div className="relative flex flex-col items-center justify-center text-center animate-zoomIn">
         <div className="bg-white/80 backdrop-blur-md px-6 py-4 rounded-2xl shadow-lg border border-gray-200 max-w-md">
           <p className="text-2xl sm:text-3xl font-semibold text-gray-800 italic mb-2">

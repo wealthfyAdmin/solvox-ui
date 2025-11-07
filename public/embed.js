@@ -1,34 +1,32 @@
-
 /**
  * Voice Agent Embed Widget
  * ✅ Production-ready (auto detects local vs live, HTTPS enforced)
  */
 
 ;(() => {
-  const scripts = document.getElementsByTagName("script");
-  const currentScript = scripts[scripts.length - 1];
-  const scriptSrc = currentScript?.src || "";
-  const scriptUrl = new URL(scriptSrc, window.location.origin);
+  const scripts = document.getElementsByTagName("script")
+  const currentScript = scripts[scripts.length - 1]
+  const scriptSrc = currentScript?.src || ""
+  const scriptUrl = new URL(scriptSrc, window.location.origin)
 
   // ✅ Default base URL for production
-  let baseUrl = "https://app.solvox.ai";
-  const agentId = currentScript?.getAttribute("data-agent-id") || null;
+  let baseUrl = "https://app.solvox.ai"
+  const agentId = currentScript?.getAttribute("data-agent-id") || null
 
   // ✅ Detect local environment automatically
-  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname)
   if (isLocal) {
-    baseUrl = "https://app.solvox.ai";
+    baseUrl = "http://localhost:3000"
   } else {
-    // If current script not from solvoxpoc.techpixel.co.in, still force HTTPS
-    const origin = scriptUrl.origin || "";
+    const origin = scriptUrl.origin || ""
     if (!origin.includes("https://app.solvox.ai")) {
-      baseUrl = "https://app.solvox.ai";
+      baseUrl = "https://app.solvox.ai"
     }
   }
 
   // ✅ Normalize protocol to always HTTPS for production
   if (!isLocal && baseUrl.startsWith("http://")) {
-    baseUrl = baseUrl.replace("http://", "https://");
+    baseUrl = baseUrl.replace("http://", "https://")
   }
 
   const config = {
@@ -37,39 +35,39 @@
     widgetId: "voice-agent-widget",
     iframeId: "voice-agent-iframe",
     toggleButtonId: "voice-agent-toggle-button",
-  };
+  }
 
   class VoiceAgentWidget {
     constructor() {
-      this.container = null;
-      this.iframe = null;
-      this.videoOverlay = null;
-      this.button = null;
-      this.closeButton = null;
-      this.toggleButton = null;
-      this.init();
+      this.container = null
+      this.iframe = null
+      this.videoOverlay = null
+      this.button = null
+      this.closeButton = null
+      this.toggleButton = null
+      this.init()
     }
 
     init() {
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => this.createWidget());
+        document.addEventListener("DOMContentLoaded", () => this.createWidget())
       } else {
-        this.createWidget();
+        this.createWidget()
       }
     }
 
     createWidget() {
-      this.injectStyles();
-      this.createVideoWidget();
-      this.createChatIframe();
-      this.createFloatingButton();
-      this.attachEvents();
+      this.injectStyles()
+      this.createVideoWidget()
+      this.createChatIframe()
+      this.createFloatingButton()
+      this.attachEvents()
     }
 
     injectStyles() {
-      if (document.getElementById("voice-agent-style")) return;
-      const style = document.createElement("style");
-      style.id = "voice-agent-style";
+      if (document.getElementById("voice-agent-style")) return
+      const style = document.createElement("style")
+      style.id = "voice-agent-style"
       style.textContent = `
         #${config.widgetId} {
           position: fixed; bottom: 20px; right: 20px;
@@ -143,84 +141,82 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      `;
-      document.head.appendChild(style);
+      `
+      document.head.appendChild(style)
     }
 
     createVideoWidget() {
-      this.container = document.createElement("div");
-      this.container.id = config.widgetId;
+      this.container = document.createElement("div")
+      this.container.id = config.widgetId
 
-      const video = document.createElement("video");
-      video.id = "voice-agent-video";
-      video.autoplay = true;
-      video.loop = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.innerHTML = `<source src="https://app.solvox.ai/images/embed/4886443_Business_Woman_Young_3840x2160.mp4" type="video/mp4">`;
+      const video = document.createElement("video")
+      video.id = "voice-agent-video"
+      video.autoplay = true
+      video.loop = true
+      video.muted = true
+      video.playsInline = true
+      video.innerHTML = `<source src="https://app.solvox.ai/images/embed/4886443_Business_Woman_Young_3840x2160.mp4" type="video/mp4">`
 
-      const close = document.createElement("button");
-      close.id = "voice-agent-close";
-      close.innerHTML = "&times;";
+      const close = document.createElement("button")
+      close.id = "voice-agent-close"
+      close.innerHTML = "&times;"
 
-      const overlay = document.createElement("div");
-      overlay.id = "voice-agent-overlay";
+      const overlay = document.createElement("div")
+      overlay.id = "voice-agent-overlay"
       overlay.innerHTML = `
         <button id="voice-agent-button">Talk to Anamika</button>
         <div id="voice-agent-footer">Powered by Solvox AI</div>
-      `;
+      `
 
-      this.container.append(video, overlay, close);
-      document.body.appendChild(this.container);
+      this.container.append(video, overlay, close)
+      document.body.appendChild(this.container)
 
-      this.videoOverlay = overlay;
-      this.button = overlay.querySelector("#voice-agent-button");
-      this.closeButton = close;
+      this.videoOverlay = overlay
+      this.button = overlay.querySelector("#voice-agent-button")
+      this.closeButton = close
     }
 
     createChatIframe() {
       if (this.iframe && this.iframe.parentNode) {
-        this.iframe.parentNode.removeChild(this.iframe);
+        this.iframe.parentNode.removeChild(this.iframe)
       }
-      this.iframe = document.createElement("iframe");
-      this.iframe.id = config.iframeId;
+      this.iframe = document.createElement("iframe")
+      this.iframe.id = config.iframeId
 
-      // ✅ Use environment-aware URL
-      let iframeUrl = `${config.baseUrl}/widget/test/`;
-      if (config.agentId)
-        iframeUrl += `?agentId=${encodeURIComponent(config.agentId)}`;
+      let iframeUrl = `${config.baseUrl}/widget/test/`
+      if (config.agentId) iframeUrl += `?agentId=${encodeURIComponent(config.agentId)}`
 
-      this.iframe.src = iframeUrl;
-      this.iframe.allow = "microphone; camera; autoplay";
-      this.iframe.allowFullscreen = true;
-      this.iframe.style.display = "none";
-      this.container.appendChild(this.iframe);
+      this.iframe.src = iframeUrl
+      this.iframe.allow = "microphone; camera; autoplay"
+      this.iframe.allowFullscreen = true
+      this.iframe.style.display = "none"
+      this.container.appendChild(this.iframe)
     }
 
     createFloatingButton() {
-      if (document.getElementById(config.toggleButtonId)) return;
-      this.toggleButton = document.createElement("button");
-      this.toggleButton.id = config.toggleButtonId;
-      this.toggleButton.innerText = "Chat with Anamika";
-      document.body.appendChild(this.toggleButton);
+      if (document.getElementById(config.toggleButtonId)) return
+      this.toggleButton = document.createElement("button")
+      this.toggleButton.id = config.toggleButtonId
+      this.toggleButton.innerText = "Chat with Anamika"
+      document.body.appendChild(this.toggleButton)
     }
 
     attachEvents() {
-      if (!this.button || !this.closeButton || !this.toggleButton) return;
+      if (!this.button || !this.closeButton || !this.toggleButton) return
 
-      this.button.addEventListener("click", () => this.openChat());
-      this.closeButton.addEventListener("click", () => this.collapse());
-      this.toggleButton.addEventListener("click", () => this.expand());
+      this.button.addEventListener("click", () => this.openChat())
+      this.closeButton.addEventListener("click", () => this.collapse())
+      this.toggleButton.addEventListener("click", () => this.expand())
 
       window.addEventListener("message", (event) => {
-        if (event.data.type === "VOICE_AGENT_END_SESSION") this.collapse();
-      });
+        if (event.data.type === "VOICE_AGENT_END_SESSION") this.collapse()
+      })
     }
 
     openChat() {
-      if (!this.videoOverlay || !this.iframe) return;
+      if (!this.videoOverlay || !this.iframe) return
 
-      this.videoOverlay.style.display = "flex";
+      this.videoOverlay.style.display = "flex"
       this.videoOverlay.innerHTML = `
         <div style="text-align:center; color:#555; font-family:Inter, sans-serif;">
           <div style="margin-bottom:8px">
@@ -232,49 +228,64 @@
           </div>
           <p style="font-size:13px;">Connecting to Anamika...</p>
         </div>
-      `;
+      `
 
-      this.iframe.classList.add("active");
-      this.iframe.style.display = "block";
-      this.iframe.contentWindow?.postMessage({ type: "VOICE_AGENT_OPENED" }, "*");
+      this.iframe.classList.add("active")
+      this.iframe.style.display = "block"
+      this.iframe.contentWindow?.postMessage({ type: "VOICE_AGENT_OPENED" }, "*")
 
       setTimeout(() => {
-        this.videoOverlay.style.display = "none";
-        const video = this.container.querySelector("#voice-agent-video");
-        if (video) video.style.display = "none";
-      }, 1200);
+        this.videoOverlay.style.display = "none"
+        const video = this.container.querySelector("#voice-agent-video")
+        if (video) video.style.display = "none"
+      }, 1200)
     }
 
     collapse() {
-      if (!this.container || !this.toggleButton) return;
-      this.container.classList.add("collapsed");
-      this.toggleButton.style.display = "flex";
+      if (!this.container || !this.toggleButton) return
 
-      const video = this.container.querySelector("#voice-agent-video");
-      if (video) video.style.display = "block";
-      if (this.videoOverlay) this.videoOverlay.style.display = "flex";
+      console.log("Collapse called")
+
+      if (this.iframe && this.iframe.contentWindow) {
+        this.iframe.contentWindow.postMessage({ type: "CLOSE_WIDGET" }, "*")
+        console.log("CLOSE_WIDGET message sent to iframe")
+      }
+
+      this.container.classList.add("collapsed")
+      this.toggleButton.style.display = "flex"
+
+      const video = this.container.querySelector("#voice-agent-video")
+      if (video) {
+        video.style.display = "block"
+        console.log("Video shown")
+      }
+
+      if (this.videoOverlay) {
+        this.videoOverlay.style.display = "flex"
+        console.log("Video overlay shown")
+      }
     }
 
     expand() {
-      if (!this.container) return;
+      if (!this.container) return
 
-      this.createChatIframe();
-      const video = this.container.querySelector("#voice-agent-video");
-      if (video) video.style.display = "block";
+      this.createChatIframe()
+      const video = this.container.querySelector("#voice-agent-video")
+      if (video) video.style.display = "block"
 
-      this.videoOverlay.style.display = "flex";
+      this.videoOverlay.style.display = "flex"
       this.videoOverlay.innerHTML = `
         <button id="voice-agent-button">Talk to Anamika</button>
         <div id="voice-agent-footer">Powered by Solvox AI</div>
-      `;
+      `
 
-      this.button = this.videoOverlay.querySelector("#voice-agent-button");
-      if (this.button) this.button.addEventListener("click", () => this.openChat());
+      this.button = this.videoOverlay.querySelector("#voice-agent-button")
+      if (this.button) this.button.addEventListener("click", () => this.openChat())
 
-      this.container.classList.remove("collapsed");
-      this.toggleButton.style.display = "none";
+      this.container.classList.remove("collapsed")
+      this.toggleButton.style.display = "none"
     }
   }
 
-  window.VoiceAgentWidget = new VoiceAgentWidget();
-})();
+  window.VoiceAgentWidget = new VoiceAgentWidget()
+})()

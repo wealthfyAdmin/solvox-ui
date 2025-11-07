@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { Room, RoomEvent, VideoPresets } from "livekit-client"
+import { Room, VideoPresets } from "livekit-client"
 import { RoomContext } from "@livekit/components-react"
 import ChatState from "@/components/embed-widget/chat-state"
 import VoiceState from "@/components/embed-widget/voice-state"
@@ -20,19 +20,22 @@ function EmbedWidgetContent() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [room] = useState(() => new Room({
-    adaptiveStream: true,
-    dynacast: true,
-    videoCaptureDefaults: { resolution: VideoPresets.h540.resolution },
-  }))
+  const [room] = useState(
+    () =>
+      new Room({
+        adaptiveStream: true,
+        dynacast: true,
+        videoCaptureDefaults: { resolution: VideoPresets.h540.resolution },
+      }),
+  )
 
   const { fetchConnectionDetails } = useConnectionDetails()
 
   useEffect(() => {
-    const displayName = searchParams.get("agentId") || "Sales";
-    setAgentId(displayName); // used for backend connection
-    setAgentName(displayName); // shown in UI
-  }, [searchParams]);
+    const displayName = searchParams.get("agentId") || "Sales"
+    setAgentId(displayName)
+    setAgentName(displayName)
+  }, [searchParams])
 
   const connectToAgent = useCallback(async () => {
     if (!agentId) return
@@ -58,10 +61,16 @@ function EmbedWidgetContent() {
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.data.type === "VOICE_AGENT_OPENED") connectToAgent()
+      if (e.data.type === "CLOSE_WIDGET") {
+        console.log("[EmbedWidget] Received CLOSE_WIDGET message, disconnecting...")
+        room.disconnect()
+        setIsConnected(false)
+        window.parent.postMessage({ type: "VOICE_AGENT_END_SESSION" }, "*")
+      }
     }
     window.addEventListener("message", handler)
     return () => window.removeEventListener("message", handler)
-  }, [connectToAgent])
+  }, [connectToAgent, room])
 
   if (isConnecting)
     return (
@@ -101,11 +110,7 @@ function EmbedWidgetContent() {
               />
             )}
             {widgetState === "voice" && (
-              <VoiceState
-                room={room}
-                agentName={agentName}
-                onEndCall={() => setWidgetState("chat")}
-              />
+              <VoiceState room={room} agentName={agentName} onEndCall={() => setWidgetState("chat")} />
             )}
           </RoomContext.Provider>
         )}

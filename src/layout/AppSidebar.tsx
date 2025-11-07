@@ -5,15 +5,19 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
+  BoltIcon,
   BoxCubeIcon,
   CalenderIcon,
+  ChatIcon,
   ChevronDownIcon,
+  FileIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
+  ShootingStarIcon,
   TableIcon,
   UserCircleIcon,
 } from "../icons/index";
@@ -28,14 +32,19 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <CalenderIcon />,
+    icon: <GridIcon />,
     name: "Dashboard",
     path: "/",
   },
     {
-    icon: <GridIcon />,
+    icon: <ChatIcon />,
     name: "Agent Setup",
     path: "/agent-setup",
+  },
+    {
+    icon: <FileIcon />,
+    name: "File Upload",
+    path: "/file-upload",
   },
   // {
   //   icon: <GridIcon />,

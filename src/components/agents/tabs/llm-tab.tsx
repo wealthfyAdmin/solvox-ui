@@ -17,32 +17,32 @@ function Help({ children }: { children: React.ReactNode }) {
 }
 
 const LLM_PROVIDERS = [
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
+  // { value: "openai", label: "OpenAI" },
+  // { value: "anthropic", label: "Anthropic" },
   { value: "google", label: "Google" },
-  { value: "groq", label: "Groq" },
+  // { value: "groq", label: "Groq" },
 ]
 
 const LLM_MODELS = {
-  openai: [
-    { value: "gpt-4o", label: "GPT-4o" },
-    { value: "gpt-4o-mini", label: "GPT-4o Mini" },
-    { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
-    { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
-  ],
-  anthropic: [
-    { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
-    { value: "claude-3-haiku-20240307", label: "Claude 3 Haiku" },
-  ],
+  // openai: [
+  //   { value: "gpt-4o", label: "GPT-4o" },
+  //   { value: "gpt-4o-mini", label: "GPT-4o Mini" },
+  //   { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+  //   { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
+  // ],
+  // anthropic: [
+  //   { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
+  //   { value: "claude-3-haiku-20240307", label: "Claude 3 Haiku" },
+  // ],
   google: [
     { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
     { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
     { value: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite" },
-  ],
-  groq: [
-    { value: "llama-3.1-70b-versatile", label: "Llama 3.1 70B" },
-    { value: "llama-3.1-8b-instant", label: "Llama 3.1 8B" },
-  ],
+  ]
+  // groq: [
+  //   { value: "llama-3.1-70b-versatile", label: "Llama 3.1 70B" },
+  //   { value: "llama-3.1-8b-instant", label: "Llama 3.1 8B" },
+  // ],
 }
 
 export default function LLMTab({
@@ -55,7 +55,7 @@ export default function LLMTab({
   disabled?: boolean
 }) {
   const currentProvider = agent?.llmProvider?.toLowerCase() || "openai"
-  const availableModels = LLM_MODELS[currentProvider as keyof typeof LLM_MODELS] || LLM_MODELS.openai
+  const availableModels = LLM_MODELS[currentProvider as keyof typeof LLM_MODELS] || LLM_MODELS.google
 
   return (
     <div className="space-y-6 dark:text-white">

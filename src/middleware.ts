@@ -1,7 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-// Routes that don't require authentication
-const publicRoutes = ["/signin", "/signup", "/reset-password", "/api/auth/signin"]
+const publicRoutes = [
+  "/signin",
+  "/signup",
+  "/reset-password",
+  "/api/auth/signin",
+  "/api/connection-details",
+  "/embed.js",
+  "/widget/test"
+];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -30,6 +37,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+      "/((?!_next/static|_next/image|favicon.ico|images|videos|embed.js|widget/test).*)",
   ],
 }

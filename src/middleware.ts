@@ -6,8 +6,11 @@ const publicRoutes = [
   "/reset-password",
   "/api/auth/signin",
   "/api/connection-details",
+  "/api/connection-details-one",
   "/embed.js",
-  "/widget/test"
+  "/embed_1.js",
+  "/widget/test",
+  "/widget/test1"
 ];
 
 export function middleware(request: NextRequest) {
@@ -37,6 +40,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-      "/((?!_next/static|_next/image|favicon.ico|images|videos|embed.js|widget/test).*)",
+      "/((?!_next/static|_next/image|favicon.ico|images|videos|embed.js|embed_1.js|widget/test|widget/test1).*)",
   ],
 }

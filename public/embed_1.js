@@ -3,7 +3,7 @@
  * ✅ Production-ready (auto detects local vs live, HTTPS enforced)
  */
 
-;(() => {
+; (() => {
   const scripts = document.getElementsByTagName("script")
   const currentScript = scripts[scripts.length - 1]
   const scriptSrc = currentScript?.src || ""
@@ -208,9 +208,35 @@
       this.closeButton.addEventListener("click", () => this.collapse())
       this.toggleButton.addEventListener("click", () => this.expand())
 
-      window.addEventListener("message", (event) => {
-        if (event.data.type === "VOICE_AGENT_END_SESSION") this.collapse()
-      })
+      // At top-level of the component file
+      let hasDisconnected = false
+
+      useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data?.type === "CLOSE_WIDGET") {
+            if (hasDisconnected) return
+            hasDisconnected = true
+
+            console.log("[Widget] CLOSE_WIDGET received, disconnecting once...")
+            try {
+              if (room.state !== "disconnected") {
+                room.disconnect()
+              }
+            } catch (err) {
+              console.warn("Room already disconnected or not ready", err)
+            }
+
+            // Optional: after a short delay, reset flag when a new session can start
+            setTimeout(() => {
+              hasDisconnected = false
+            }, 3000)
+          }
+        }
+
+        window.addEventListener("message", handleMessage)
+        return () => window.removeEventListener("message", handleMessage)
+      }, [room])
+
     }
 
     openChat() {

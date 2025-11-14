@@ -3,7 +3,7 @@
  * ✅ Production-ready (auto detects local vs live, HTTPS enforced)
  */
 
-;(() => {
+; (() => {
   const scripts = document.getElementsByTagName("script")
   const currentScript = scripts[scripts.length - 1]
   const scriptSrc = currentScript?.src || ""
@@ -20,7 +20,7 @@
   } else {
     const origin = scriptUrl.origin || ""
     if (!origin.includes("https://app.solvox.ai")) {
-      baseUrl = "https://app.solvox.ai"
+      baseUrl = " http://localhost:3000"
     }
   }
 
@@ -108,18 +108,34 @@
           margin-top: 10px; font-size: 11px; color: #777;
           font-style: italic; text-align: center;
         }
-        #voice-agent-close {
-          position: absolute; top: 10px; right: 14px;
-          background: rgba(255,255,255,0.9);
-          border: none; border-radius: 50%;
-          width: 28px; height: 28px; cursor: pointer;
-          font-size: 18px; font-weight: bold; color: #333;
-          display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s ease; z-index: 2;
-        }
-        #voice-agent-close:hover {
-          background: rgba(255,255,255,1); transform: scale(1.1);
-        }
+       #voice-agent-close {
+  position: absolute;
+  // top: 10px;
+  right: 0px;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+#voice-agent-close:hover {
+  transform: scale(1.15);
+}
+
+#voice-agent-close img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
         #${config.iframeId} {
           width: 100%; height: 100%; border: none;
           border-radius: 20px; display: none;
@@ -159,7 +175,9 @@
 
       const close = document.createElement("button")
       close.id = "voice-agent-close"
-      close.innerHTML = "&times;"
+      close.innerHTML = `<img src="http://localhost:3000/images/icons/icons8-close-48.png" 
+      style="width:35px;height:35px;" />`
+
 
       const overlay = document.createElement("div")
       overlay.id = "voice-agent-overlay"
@@ -242,29 +260,28 @@
     }
 
     collapse() {
-      if (!this.container || !this.toggleButton) return
+      if (!this.container || !this.toggleButton) return;
 
-      console.log("Collapse called")
+      console.log("Collapse called");
 
-      if (this.iframe && this.iframe.contentWindow) {
-        this.iframe.contentWindow.postMessage({ type: "CLOSE_WIDGET" }, "*")
-        console.log("CLOSE_WIDGET message sent to iframe")
-      }
+      // ❌ REMOVE this line — it creates the infinite loop
+      // this.iframe.contentWindow.postMessage({ type: "CLOSE_WIDGET" }, "*");
 
-      this.container.classList.add("collapsed")
-      this.toggleButton.style.display = "flex"
+      this.container.classList.add("collapsed");
+      this.toggleButton.style.display = "flex";
 
-      const video = this.container.querySelector("#voice-agent-video")
+      const video = this.container.querySelector("#voice-agent-video");
       if (video) {
-        video.style.display = "block"
-        console.log("Video shown")
+        video.style.display = "block";
+        console.log("Video shown");
       }
 
       if (this.videoOverlay) {
-        this.videoOverlay.style.display = "flex"
-        console.log("Video overlay shown")
+        this.videoOverlay.style.display = "flex";
+        console.log("Video overlay shown");
       }
     }
+
 
     expand() {
       if (!this.container) return

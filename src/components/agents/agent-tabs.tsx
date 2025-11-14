@@ -36,11 +36,14 @@ export default function AgentTabs({
       setSaveError(null)
       setSaveSuccess(false)
 
+      console.log("Saving agent:", agent)
+
       const payload = {
         name: agent.name,
+        document_id: agent.document_id,
         display_name: agent.display_name,
         description: agent.description,
-        instructions: agent.instructions,
+        instructions: agent.prompt,
         greeting_message: agent.welcomeMessage,
         llm_provider: agent.llmProvider,
         llm_model: agent.llmModel,
@@ -52,8 +55,10 @@ export default function AgentTabs({
         tts_provider: agent.ttsProvider,
         tts_model: agent.ttsModel,
         tts_voice: agent.ttsVoice,
-        knowledgebase_id: agent.knowledgeBaseId ? Number(agent.knowledgeBaseId) : 0,
-        tools: {},
+        // knowledgebase_id: agent.knowledgeBaseId ? Number(agent.knowledgeBaseId) : 0,
+        tools: {
+          additionalProp1: {}
+        },
         is_active: true,
       }
 
@@ -94,11 +99,10 @@ export default function AgentTabs({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === tab.id
+            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
                 ? "border-blue-500 text-blue-600 dark:text-blue-400"
                 : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
-            }`}
+              }`}
           >
             {tab.label}
           </button>

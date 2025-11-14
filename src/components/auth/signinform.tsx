@@ -35,7 +35,7 @@ export default function SignInForm() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/")
+        router.push("/agent-setup") // or dashboard — wherever default
         router.refresh()
       } else {
         setError(data.error || "Invalid credentials")
@@ -58,8 +58,8 @@ export default function SignInForm() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Enter your email and password to sign in!</p>
           </div>
           <div>
-            
-            
+
+
             {error && (
               <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                 {error}

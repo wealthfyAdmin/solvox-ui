@@ -29,12 +29,15 @@ export type AgentRecord = {
   display_name?: string
   description?: string
   welcomeMessage?: string
-  instructions?: string
+  prompt?: string
   llmProvider?: string
   llmModel?: string
   llmTokens?: number
   llmTemperature?: number
-  knowledgeBaseId?: string
+  // knowledgeBaseId?: string
+  document_id?: null
+  stt_language?: string
+  tts_model?: string
   language?: string
   asrProvider?: string
   asrModel?: string
@@ -45,6 +48,9 @@ export type AgentRecord = {
   bufferSize?: number
   speedRate?: number
   orgId?: string
+  tools?: {
+    additionalProp1: {}
+},
 }
 
 type Organization = {

@@ -8,7 +8,7 @@ import LLMTab from "./tabs/llm-tab"
 import AudioTab from "./tabs/audio-tab"
 import WidgetTab from "./tabs/widget-tab"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 type TabType = "agent" | "llm" | "audio" | "widget"
 

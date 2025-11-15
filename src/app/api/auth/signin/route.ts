@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 const LOGIN_API_URL = `${BACKEND_URL}/api/login`
 const USER_API_URL = `${BACKEND_URL}/api/user` // Adjust if your backend user info endpoint differs
 

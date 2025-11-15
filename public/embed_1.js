@@ -20,7 +20,7 @@
   } else {
     const origin = scriptUrl.origin || ""
     if (!origin.includes("https://app.solvox.ai")) {
-      baseUrl = "https://app.solvox.ai"
+      baseUrl = "http://localhost:3000"
     }
   }
 

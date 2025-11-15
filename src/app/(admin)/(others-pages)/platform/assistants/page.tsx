@@ -82,7 +82,7 @@ export default function Home() {
           assistantId: assistant.id,
           roomName,
           token: tokenData.token,
-          livekitUrl: tokenData.url || process.env.NEXT_PUBLIC_LIVEKIT_URL || "wss://your-livekit-server.com",
+          livekitUrl: tokenData.url || process.env.LIVEKIT_URL || "wss://your-livekit-server.com",
         }
 
         setCurrentSession(session)

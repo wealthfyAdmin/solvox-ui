@@ -355,16 +355,6 @@ export default function Users() {
                 />
               </div>
               <div>
-                <Label>Confirm Password</Label>
-                <Input
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
                 <Label>Organization</Label>
                 <select
                   name="organization_id"
@@ -403,19 +393,6 @@ export default function Users() {
               <div>
                 <Label>Email</Label>
                 <Input name="email" type="email" value={formData.email} onChange={handleInputChange} required />
-              </div>
-              <div>
-                <Label>Password (leave blank to keep current)</Label>
-                <Input name="password" type="password" value={formData.password} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label>Confirm Password</Label>
-                <Input
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                />
               </div>
               <div>
                 <Label>Organization</Label>

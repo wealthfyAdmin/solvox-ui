@@ -3,8 +3,8 @@ import { getAuthHeaders } from "@/lib/auth"
 
 const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
-// -------------------- PATCH /api/users/[id] --------------------
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+// -------------------- PUT /api/users/[id] --------------------
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const headers = await getAuthHeaders()
     const body = await request.json()
@@ -12,7 +12,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     console.log("🔹 Updating user:", params.id, "Payload:", body)
 
     const response = await fetch(`${BACKEND_URL}/api/user/${params.id}`, {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         ...headers,
         "Content-Type": "application/json",

@@ -7,8 +7,12 @@ import AgentTab from "./tabs/agent-tab"
 import LLMTab from "./tabs/llm-tab"
 import AudioTab from "./tabs/audio-tab"
 import WidgetTab from "./tabs/widget-tab"
+import { getClientAccessToken } from "@/lib/auth-client"
 
 const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
+const token = getClientAccessToken();
+console.log("Client Access Token in AgentTabs:", token);
+
 
 type TabType = "agent" | "llm" | "audio" | "widget"
 
@@ -36,8 +40,6 @@ export default function AgentTabs({
       setSaveError(null)
       setSaveSuccess(false)
 
-      console.log("Saving agent:", agent)
-
       const payload = {
         name: agent.name,
         document_id: agent.document_id,
@@ -63,11 +65,11 @@ export default function AgentTabs({
       }
 
       const res = await fetch(`${BACKEND_URL}/api/agent/${encodeURIComponent(agent.id)}`, {
-        method: "PUT",
+        method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      })
+      });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))

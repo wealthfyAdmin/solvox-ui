@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     cookieStore.set("access_token", access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     })
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       cookieStore.set("token_type", token_type, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 60 * 60 * 24 * 7,
         path: "/",
       })
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     cookieStore.set("session", "authenticated", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     })

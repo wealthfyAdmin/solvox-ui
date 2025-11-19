@@ -50,7 +50,7 @@ export type AgentRecord = {
   orgId?: string
   tools?: {
     additionalProp1: {}
-},
+  },
 }
 
 type Organization = {
@@ -538,7 +538,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                 </Button>
               </div>
 
-              
+
               {/* Agents list */}
               <ul className="mt-4 space-y-1">
                 {agents
@@ -749,15 +749,27 @@ export default function AgentSetupPage(disabled?: boolean) {
                   credentials: "include",
                 })
                 if (!res.ok) {
-                  const text = await res.text().catch(() => "")
-                  throw new Error(text || "Failed to delete organization")
+                  let message = "Failed to delete organization";
+
+                  try {
+                    const data = await res.json();
+                    message = data.error || data.message || message;
+                  } catch {
+                    // fallback to plain text if not JSON
+                    const text = await res.text();
+                    message = text || message;
+                  }
+
+                  throw new Error(message);
                 }
+
                 setOrganizations((prev) => prev.filter((o) => o.id !== selectedOrgId))
                 // reset selection if needed
                 const remaining = organizations.filter((o) => o.id !== selectedOrgId)
                 setSelectedOrgId(remaining[0]?.id ?? "")
                 setAgents([]) // clear agents for deleted org
               } catch (e: any) {
+                console.error("Failed to delete organization:", e)
                 setError(e?.message || "Failed to delete organization")
               } finally {
                 setLoading(false)

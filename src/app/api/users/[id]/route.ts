@@ -53,7 +53,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     const response = await fetch(`${BACKEND_URL}/api/user/${params.id}`, {
       method: "DELETE",
-      headers,
+       headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
     })
 
     const text = await response.text()

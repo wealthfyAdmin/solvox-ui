@@ -135,7 +135,9 @@ export default function Users() {
       })
 
       if (response.ok) {
-        setIsCreateModalOpen(false)
+        setIsCreateModalOpen(false);
+
+        // Reset form
         setFormData({
           name: "",
           email: "",
@@ -143,9 +145,11 @@ export default function Users() {
           confirmPassword: "",
           organization_id: "",
           role: "user",
-        })
-        fetchUsers()
+        });
+
+        await fetchUsers();
       }
+
     } catch (error) {
       console.error("Error creating user:", error)
     }
@@ -174,33 +178,54 @@ export default function Users() {
       })
 
       if (response.ok) {
-        setIsEditModalOpen(false)
-        setSelectedUser(null)
-        fetchUsers()
+        // Close modal FIRST
+        setIsEditModalOpen(false);
+
+        // Reset state
+        setSelectedUser(null);
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          organization_id: "",
+          role: "user",
+        });
+
+        // Refresh data
+        await fetchUsers();
       }
+
     } catch (error) {
       console.error("Error updating user:", error)
     }
   }
 
-  // Delete user
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return
+  const handleDeleteUser = async (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // ⛔ prevents backdrop from firing onClose again
+
+    if (!selectedUser) return;
 
     try {
       const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: "DELETE",
-      })
+      });
 
       if (response.ok) {
-        setIsDeleteModalOpen(false)
-        setSelectedUser(null)
-        fetchUsers()
+        // 1️⃣ Reset selected user FIRST
+        setSelectedUser(null);
+
+        // 2️⃣ Close modal second
+        setIsDeleteModalOpen(false);
+
+        // 3️⃣ Refresh list
+        await fetchUsers();
       }
     } catch (error) {
-      console.error("Error deleting user:", error)
+      console.error("Error deleting user:", error);
     }
-  }
+  };
+
 
   const openEditModal = (user: User) => {
     setSelectedUser(user)
@@ -347,6 +372,16 @@ export default function Users() {
               <div>
                 <Label>Password</Label>
                 <Input
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Password</Label>
+                <Input
                   name="password"
                   type="password"
                   value={formData.password}
@@ -423,13 +458,13 @@ export default function Users() {
 
         {/* Delete Confirmation Modal */}
         <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} className="max-w-xl">
-          <div className="p-6">
+          <div className="p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Delete User</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to delete {selectedUser?.name}? This action cannot be undone.
             </p>
             <div className="flex gap-3">
-              <Button onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={(e) => handleDeleteUser(e)} className="bg-red-600 hover:bg-red-700">
                 Delete
               </Button>
               <Button onClick={() => setIsDeleteModalOpen(false)} variant="secondary">

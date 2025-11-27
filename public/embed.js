@@ -72,7 +72,7 @@
         #${config.widgetId} {
           position: fixed; bottom: 20px; right: 20px;
           width: 360px; height: 580px;
-          border-radius: 20px; background: #000;
+          border-radius: 20px; 
           overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
           z-index: 999999; transform-origin: bottom right;
           transition: all 0.3s ease-in-out;

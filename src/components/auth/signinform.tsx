@@ -35,7 +35,7 @@ export default function SignInForm() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/agent-setup") // or dashboard — wherever default
+        router.push("/") 
         router.refresh()
       } else {
         setError(data.error || "Invalid credentials")
@@ -126,7 +126,7 @@ export default function SignInForm() {
              <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account? {""}
-                <Link href="/auth/signup" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                <Link href="/signup" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                   Sign Up
                 </Link>
               </p>

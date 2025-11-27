@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import UserAddressCard from "@/components/user-profile/UserAddressCard";
 import UserInfoCard from "@/components/user-profile/UserInfoCard";
 import UserMetaCard from "@/components/user-profile/UserMetaCard";
 import LoadingSpinner from "@/components/ui/loadingspinner/loadingspinner";
@@ -36,7 +35,7 @@ export default function Profile() {
     <div>
       <PageBreadcrumb pageTitle="Profile" />
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 lg:p-6">
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 dark:bg-white/[0.03] p-5 dark:border-gray-800 lg:p-6">
         <div className="space-y-6">
           <UserMetaCard user={user} />
           <UserInfoCard user={user} setUser={setUser} />

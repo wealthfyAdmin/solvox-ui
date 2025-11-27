@@ -32,7 +32,7 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
 
   const [saving, setSaving] = useState(false);
 
-  // Sync latest user value into modal when modal opens
+  // Sync latest user value when modal opens
   useEffect(() => {
     if (isOpen) {
       setFormData({
@@ -82,7 +82,6 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
           return;
         }
 
-        // Update parent state → instantly updates UserMetaCard
         setUser((prev: any) => ({
           ...prev,
           name: formData.name,
@@ -132,9 +131,8 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
       } else {
         alert("No changes to save");
       }
-
     } catch (error) {
-      console.error("Error saving changes:", error);
+      console.error("Saving error:", error);
       alert("Failed to save changes");
     } finally {
       setSaving(false);
@@ -149,39 +147,43 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 
-        {/* LEFT: info */}
+        {/* LEFT INFO */}
         <div>
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
             Personal Information
           </h4>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+
             <div>
-              <p className="mb-2 text-xs text-gray-500">First Name</p>
-              <p className="text-sm font-medium">{firstName}</p>
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">First Name</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">{firstName}</p>
             </div>
 
             <div>
-              <p className="mb-2 text-xs text-gray-500">Last Name</p>
-              <p className="text-sm font-medium">{lastName}</p>
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Last Name</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">{lastName}</p>
             </div>
 
             <div>
-              <p className="mb-2 text-xs text-gray-500">Email address</p>
-              <p className="text-sm font-medium">{user.email}</p>
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Email Address</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">{user.email}</p>
             </div>
 
             <div>
-              <p className="mb-2 text-xs text-gray-500">Role</p>
-              <p className="text-sm font-medium">{user.role}</p>
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Role</p>
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">{user.role}</p>
             </div>
+
           </div>
         </div>
 
-        {/* RIGHT: EDIT BUTTON (POSITION RESTORED EXACTLY) */}
+        {/* EDIT BUTTON */}
         <button
           onClick={openModal}
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 
+                     dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 
+                     lg:inline-flex lg:w-auto"
         >
           <svg
             className="fill-current"
@@ -200,12 +202,15 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
         </button>
       </div>
 
-      {/* =================== MODAL (UI UNCHANGED) =================== */}
+      {/* MODAL */}
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+        <div className="relative w-full p-4 overflow-y-auto bg-white rounded-3xl no-scrollbar dark:bg-gray-900 lg:p-11">
+
           <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold">Edit Personal Information</h4>
-            <p className="mb-6 text-sm text-gray-500">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Edit Personal Information
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
               Update your profile details. Organization and role cannot be changed.
             </p>
           </div>
@@ -214,12 +219,14 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
 
               <div>
-                <h5 className="mb-5 text-lg font-medium">Personal Information</h5>
+                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90">
+                  Personal Information
+                </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
 
                   <div>
-                    <Label>Full Name</Label>
+                    <Label className="dark:text-gray-300">Full Name</Label>
                     <Input
                       type="text"
                       name="name"
@@ -229,7 +236,7 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
                   </div>
 
                   <div>
-                    <Label>Email Address</Label>
+                    <Label className="dark:text-gray-300">Email Address</Label>
                     <Input
                       type="email"
                       name="email"
@@ -242,11 +249,14 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
               </div>
 
               <div className="mt-7">
-                <h5 className="mb-5 text-lg font-medium">Change Password</h5>
+                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90">
+                  Change Password
+                </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5">
+
                   <div>
-                    <Label>Current Password</Label>
+                    <Label className="dark:text-gray-300">Current Password</Label>
                     <Input
                       type="password"
                       name="old_password"
@@ -256,7 +266,7 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
                   </div>
 
                   <div>
-                    <Label>New Password</Label>
+                    <Label className="dark:text-gray-300">New Password</Label>
                     <Input
                       type="password"
                       name="new_password"
@@ -266,7 +276,7 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
                   </div>
 
                   <div>
-                    <Label>Confirm New Password</Label>
+                    <Label className="dark:text-gray-300">Confirm New Password</Label>
                     <Input
                       type="password"
                       name="confirm_password"
@@ -274,9 +284,9 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
                       onChange={handlePasswordChange}
                     />
                   </div>
+
                 </div>
               </div>
-
             </div>
 
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
@@ -288,6 +298,7 @@ export default function UserInfoCard({ user, setUser }: UserInfoCardProps) {
               </Button>
             </div>
           </form>
+
         </div>
       </Modal>
     </div>

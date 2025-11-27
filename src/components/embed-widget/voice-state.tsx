@@ -114,12 +114,12 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
           display: flex;
           align-items: flex-end;
           justify-content: center;
-          gap: 8px;
-          height: 100px;
+          gap: 15px;
+          height: 120px;
         }
         .voice-wave span {
           display: block;
-          width: 6px;
+          width: 10px;
           background: linear-gradient(180deg, #6366f1, #8b5cf6);
           border-radius: 9999px;
           animation: wavePulse 1.3s ease-in-out infinite;

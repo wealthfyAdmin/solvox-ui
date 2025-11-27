@@ -12,6 +12,9 @@ import Input from "@/components/form/input/InputField"
 import Label from "@/components/form/Label"
 import { useState, useEffect } from "react"
 import { MoreVertical, Plus, Edit, Trash2 } from "lucide-react"
+import { toast } from "react-hot-toast";
+import { handleApiError, showError } from "@/lib/handleApiError";
+
 
 interface User {
   id: number
@@ -113,6 +116,7 @@ export default function Users() {
 
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!")
+      
       return
     }
 

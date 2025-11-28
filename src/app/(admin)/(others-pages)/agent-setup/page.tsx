@@ -13,7 +13,7 @@ import DeleteOrganizationModal from "@/components/agents/delete-organization-mod
 import VoiceCallModal from "@/components/agents/voice-call-modal"
 import OutboundCallButton from "@/components/header/NotificationDropdown"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 type CostBreakdown = {
   transcriber: number

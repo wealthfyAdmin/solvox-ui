@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000";
 
 async function getAuthHeaders(req: NextRequest) {
   const authHeader = req.headers.get("authorization");

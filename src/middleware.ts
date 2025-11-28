@@ -5,6 +5,7 @@ const publicRoutes = [
   "/signup",
   "/reset-password",
   "/api/auth/signin",
+  "/api/auth/signup",
   "/api/connection-details",
   "/embed.js",
   "/widget/test"

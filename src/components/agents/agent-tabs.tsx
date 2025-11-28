@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"  // ← Add useEffect import
 import type { AgentRecord } from "@/app/(admin)/(others-pages)/agent-setup/page"
 import Button from "@/components/ui/button/Button"
 import AgentTab from "./tabs/agent-tab"
@@ -12,7 +12,6 @@ import { getClientAccessToken } from "@/lib/auth-client"
 const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 const token = getClientAccessToken();
 console.log("Client Access Token in AgentTabs:", token);
-
 
 type TabType = "agent" | "llm" | "audio" | "widget"
 
@@ -31,6 +30,16 @@ export default function AgentTabs({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  
+  // ← NEW: Dynamic backend URL from window.__ENV
+  const [backendUrl, setBackendUrl] = useState("http://localhost:8000")
+
+  // ← NEW: Load runtime config on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.__ENV?.PYTHON_BACKEND_URL) {
+      setBackendUrl(window.__ENV.PYTHON_BACKEND_URL)
+    }
+  }, [])
 
   const handleSaveChanges = async () => {
     if (!agent?.id) return
@@ -64,8 +73,9 @@ export default function AgentTabs({
         is_active: true,
       }
 
-      const res = await fetch(`${BACKEND_URL}/api/agent/${encodeURIComponent(agent.id)}`, {
-        method: "PATCH",
+      // ← CHANGED: Use dynamic backendUrl state
+      const res = await fetch(`${backendUrl}/api/agent/${encodeURIComponent(agent.id)}`, {
+        method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -86,6 +96,7 @@ export default function AgentTabs({
     }
   }
 
+  // Rest of your component stays EXACTLY the same...
   const tabs: Array<{ id: TabType; label: string }> = [
     { id: "agent", label: "Agent" },
     { id: "llm", label: "LLM" },

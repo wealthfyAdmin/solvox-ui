@@ -1,0 +1,78 @@
+
+version: '3.8'
+
+services:
+  # # -----------------------
+  # # PostgreSQL
+  # # -----------------------
+  # postgres:
+  #   image: postgres:latest
+  #   container_name: postgres
+  #   environment:
+  #     POSTGRES_USER: solvox_user
+  #     POSTGRES_PASSWORD: 1234
+  #     POSTGRES_DB: solvoxai
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - my_network
+  #   restart: always
+
+  # # -----------------------
+  # # pgAdmin
+  # # -----------------------
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin_container
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - my_network
+  #   restart: always
+
+  # # -----------------------
+  # # Backend (solvox)
+  # # -----------------------
+  # solvox:
+  #   image: finriustech/solvoxai:v1
+  #   container_name: solvox_backend
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     DATABASE_URL: postgresql://solvox_user:1234@postgres:5432/solvoxai
+  #     PYTHONUNBUFFERED: 1
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - my_network
+  #   restart: always
+
+  # -----------------------
+  # Frontend (Next.js)
+  # -----------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile   # ← your Next.js Dockerfile
+    container_name: solvox_frontend
+    # depends_on:
+    #   - solvox
+    environment:
+      PYTHON_BACKEND_URL: https://api.solvox.ai   # backend as service name
+    ports:
+      - "3000:3000"
+    networks:
+      - my_network
+    restart: always
+
+# -----------------------
+# Shared Network
+# -----------------------
+networks:
+  my_network:
+    driver: bridge

@@ -17,6 +17,10 @@ export default async function RootLayout({
   
   return (
     <html lang="en">
+      <head>
+        {/* ✅ Add runtime-config.js here */}
+        <script src="/runtime-config.js" nonce={nonce} />
+      </head>
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
           <SidebarProvider>{children}</SidebarProvider>

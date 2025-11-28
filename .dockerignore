@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Next.js build output
+.next
+out
+dist
+
+# Local environment
+
+
+# Logs
+logs
+*.log
+*.log.*
+debug.log
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Cache folders
+.cache
+turbo
+.vercel

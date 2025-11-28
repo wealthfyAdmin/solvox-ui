@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/auth"
 
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
+
 export async function GET() {
   try {
     const headers = await getAuthHeaders()
 
-    const response = await fetch("http://34.14.223.154/api/user", {
+    const response = await fetch(`${BACKEND_URL}/api/user`, {
       method: "GET",
       headers,
     })
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
     const headers = await getAuthHeaders()
     const body = await request.json()
 
-    const response = await fetch("http://34.14.223.154/api/user", {
+    const response = await fetch(`${BACKEND_URL}/api/user`, {
       method: "POST",
       headers: {
         ...headers,

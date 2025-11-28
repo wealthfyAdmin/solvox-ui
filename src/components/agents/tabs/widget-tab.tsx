@@ -14,16 +14,16 @@ export default function WidgetTab({ agent, disabled }: { agent: AgentRecord | nu
   }, [])
 
   // ✅ Automatically switch between local & live environment
- const embedScript = useMemo(() => {
-  // Always use production URL for external embeds
-  const isLocalAdmin = hostUrl.includes("localhost") || hostUrl.includes("127.0.0.1")
-  const origin = isLocalAdmin ? "http://localhost:3000" : "http://localhost:3000"
-  const agentId = agent?.name || "AGENT_ID"
+  const embedScript = useMemo(() => {
+    // Always use production URL for external embeds
+    const isLocalAdmin = hostUrl.includes("localhost") || hostUrl.includes("127.0.0.1")
+    const origin = isLocalAdmin ? "http://localhost:3000" : "http://localhost:3000"
+    const agentId = agent?.name || "AGENT_ID"
 
-  // When generating embed script, always use production host
-  const scriptOrigin = "http://localhost:3000"
+    // When generating embed script, always use production host
+    const scriptOrigin = "http://localhost:3000"
 
-  return `<!-- Start of Voice Agent Script -->
+    return `<!-- Start of Voice Agent Script -->
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function() {
   var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 <!-- End of Voice Agent Script -->`
-}, [agent?.name, hostUrl])
+  }, [agent?.name, hostUrl])
 
 
   const testUrl = useMemo(() => {

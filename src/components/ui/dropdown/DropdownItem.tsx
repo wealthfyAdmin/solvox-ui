@@ -1,3 +1,4 @@
+"use client";
 import type React from "react";
 import Link from "next/link";
 
@@ -23,21 +24,33 @@ export const DropdownItem: React.FC<DropdownItemProps> = ({
   const combinedClasses = `${baseClassName} ${className}`.trim();
 
   const handleClick = (event: React.MouseEvent) => {
+    // For LINK: DO NOT prevent default — allow Next.js navigation
     if (tag === "button") {
       event.preventDefault();
     }
-    if (onClick) onClick();
+
+    // Allow parent dropdown to close
     if (onItemClick) onItemClick();
+
+    // Custom click handler
+    if (onClick) onClick();
   };
 
+  // LINK version
   if (tag === "a" && href) {
     return (
-      <Link href={href} className={combinedClasses} onClick={handleClick}>
+      <Link
+        href={href}
+        onClick={handleClick}
+        className={combinedClasses}
+        scroll={true}
+      >
         {children}
       </Link>
     );
   }
 
+  // BUTTON version
   return (
     <button onClick={handleClick} className={combinedClasses}>
       {children}

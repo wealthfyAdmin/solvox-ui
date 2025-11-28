@@ -7,6 +7,11 @@ import AgentTab from "./tabs/agent-tab"
 import LLMTab from "./tabs/llm-tab"
 import AudioTab from "./tabs/audio-tab"
 import WidgetTab from "./tabs/widget-tab"
+import { getClientAccessToken } from "@/lib/auth-client"
+
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
+const token = getClientAccessToken();
+console.log("Client Access Token in AgentTabs:", token);
 
 type TabType = "agent" | "llm" | "audio" | "widget"
 
@@ -46,9 +51,10 @@ export default function AgentTabs({
 
       const payload = {
         name: agent.name,
+        document_id: agent.document_id,
         display_name: agent.display_name,
         description: agent.description,
-        instructions: agent.instructions,
+        instructions: agent.prompt,
         greeting_message: agent.welcomeMessage,
         llm_provider: agent.llmProvider,
         llm_model: agent.llmModel,
@@ -60,8 +66,10 @@ export default function AgentTabs({
         tts_provider: agent.ttsProvider,
         tts_model: agent.ttsModel,
         tts_voice: agent.ttsVoice,
-        knowledgebase_id: agent.knowledgeBaseId ? Number(agent.knowledgeBaseId) : 0,
-        tools: {},
+        // knowledgebase_id: agent.knowledgeBaseId ? Number(agent.knowledgeBaseId) : 0,
+        tools: {
+          additionalProp1: {}
+        },
         is_active: true,
       }
 
@@ -71,7 +79,7 @@ export default function AgentTabs({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      })
+      });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
@@ -104,11 +112,10 @@ export default function AgentTabs({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === tab.id
+            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
                 ? "border-blue-500 text-blue-600 dark:text-blue-400"
                 : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
-            }`}
+              }`}
           >
             {tab.label}
           </button>

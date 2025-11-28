@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/auth"
 
 const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 // ✅ GET — Fetch agents by organization_id
 export async function GET(request: Request) {
   try {
+
+    const headers = await getAuthHeaders()
+
     const url = new URL(request.url)
     const organizationId = url.searchParams.get("organization_id")
 
@@ -15,9 +19,8 @@ export async function GET(request: Request) {
     const response = await fetch(`${BACKEND_URL}/api/agent?organization_id=${organizationId}`, {
       method: "GET",
       headers: {
+        ...headers,
         "Content-Type": "application/json",
-        cookie: request.headers.get("cookie") || "",
-        authorization: request.headers.get("authorization") || "",
       },
       credentials: "include",
     })

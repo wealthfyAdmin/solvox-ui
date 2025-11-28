@@ -14,9 +14,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ Await headers to avoid "should be awaited" error
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
-
+  
   return (
     <html lang="en">
       <head>
@@ -24,14 +22,6 @@ export default async function RootLayout({
         <script src="/runtime-config.js" nonce={nonce} />
       </head>
       <body className={`${outfit.className} dark:bg-gray-900`}>
-        {/* ✅ Safe inline script using nonce */}
-        <script
-          nonce={nonce}
-          dangerouslySetInnerHTML={{
-            __html: `console.log("✅ Safe inline script executed with nonce: ${nonce}")`,
-          }}
-        />
-
         <ThemeProvider>
           <SidebarProvider>{children}</SidebarProvider>
         </ThemeProvider>

@@ -21,7 +21,7 @@ class AgentService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    this.baseUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000'
   }
 
   async startAgent(request: StartAgentRequest): Promise<StartAgentResponse> {

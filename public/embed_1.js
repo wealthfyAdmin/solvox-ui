@@ -20,7 +20,7 @@
   } else {
     const origin = scriptUrl.origin || ""
     if (!origin.includes("https://app.solvox.ai")) {
-      baseUrl = " http://localhost:3000"
+      baseUrl = "http://localhost:3000"
     }
   }
 
@@ -72,7 +72,7 @@
         #${config.widgetId} {
           position: fixed; bottom: 20px; right: 20px;
           width: 360px; height: 580px;
-          border-radius: 20px; 
+          border-radius: 20px; background: #000;
           overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
           z-index: 999999; transform-origin: bottom right;
           transition: all 0.3s ease-in-out;
@@ -108,34 +108,18 @@
           margin-top: 10px; font-size: 11px; color: #777;
           font-style: italic; text-align: center;
         }
-       #voice-agent-close {
-  position: absolute;
-  // top: 10px;
-  right: 0px;
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  transition: transform 0.2s ease;
-}
-
-#voice-agent-close:hover {
-  transform: scale(1.15);
-}
-
-#voice-agent-close img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  pointer-events: none;
-}
-
+        #voice-agent-close {
+          position: absolute; top: 10px; right: 14px;
+          background: rgba(255,255,255,0.9);
+          border: none; border-radius: 50%;
+          width: 28px; height: 28px; cursor: pointer;
+          font-size: 18px; font-weight: bold; color: #333;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.2s ease; z-index: 2;
+        }
+        #voice-agent-close:hover {
+          background: rgba(255,255,255,1); transform: scale(1.1);
+        }
         #${config.iframeId} {
           width: 100%; height: 100%; border: none;
           border-radius: 20px; display: none;
@@ -175,9 +159,7 @@
 
       const close = document.createElement("button")
       close.id = "voice-agent-close"
-      close.innerHTML = `<img src="http://localhost:3000/images/icons/icons8-close-48.png" 
-      style="width:35px;height:35px;" />`
-
+      close.innerHTML = "&times;"
 
       const overlay = document.createElement("div")
       overlay.id = "voice-agent-overlay"
@@ -201,7 +183,7 @@
       this.iframe = document.createElement("iframe")
       this.iframe.id = config.iframeId
 
-      let iframeUrl = `${config.baseUrl}/widget/test/`
+      let iframeUrl = `${config.baseUrl}/widget/test1/`
       if (config.agentId) iframeUrl += `?agentId=${encodeURIComponent(config.agentId)}`
 
       this.iframe.src = iframeUrl
@@ -226,9 +208,35 @@
       this.closeButton.addEventListener("click", () => this.collapse())
       this.toggleButton.addEventListener("click", () => this.expand())
 
-      window.addEventListener("message", (event) => {
-        if (event.data.type === "VOICE_AGENT_END_SESSION") this.collapse()
-      })
+      // At top-level of the component file
+      let hasDisconnected = false
+
+      useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data?.type === "CLOSE_WIDGET") {
+            if (hasDisconnected) return
+            hasDisconnected = true
+
+            console.log("[Widget] CLOSE_WIDGET received, disconnecting once...")
+            try {
+              if (room.state !== "disconnected") {
+                room.disconnect()
+              }
+            } catch (err) {
+              console.warn("Room already disconnected or not ready", err)
+            }
+
+            // Optional: after a short delay, reset flag when a new session can start
+            setTimeout(() => {
+              hasDisconnected = false
+            }, 3000)
+          }
+        }
+
+        window.addEventListener("message", handleMessage)
+        return () => window.removeEventListener("message", handleMessage)
+      }, [room])
+
     }
 
     openChat() {
@@ -260,28 +268,29 @@
     }
 
     collapse() {
-      if (!this.container || !this.toggleButton) return;
+      if (!this.container || !this.toggleButton) return
 
-      console.log("Collapse called");
+      console.log("Collapse called")
 
-      // ❌ REMOVE this line — it creates the infinite loop
-      // this.iframe.contentWindow.postMessage({ type: "CLOSE_WIDGET" }, "*");
+      if (this.iframe && this.iframe.contentWindow) {
+        this.iframe.contentWindow.postMessage({ type: "CLOSE_WIDGET" }, "*")
+        console.log("CLOSE_WIDGET message sent to iframe")
+      }
 
-      this.container.classList.add("collapsed");
-      this.toggleButton.style.display = "flex";
+      this.container.classList.add("collapsed")
+      this.toggleButton.style.display = "flex"
 
-      const video = this.container.querySelector("#voice-agent-video");
+      const video = this.container.querySelector("#voice-agent-video")
       if (video) {
-        video.style.display = "block";
-        console.log("Video shown");
+        video.style.display = "block"
+        console.log("Video shown")
       }
 
       if (this.videoOverlay) {
-        this.videoOverlay.style.display = "flex";
-        console.log("Video overlay shown");
+        this.videoOverlay.style.display = "flex"
+        console.log("Video overlay shown")
       }
     }
-
 
     expand() {
       if (!this.container) return

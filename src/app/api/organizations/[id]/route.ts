@@ -1,28 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/auth"
 
 const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
-
-async function getAuthHeaders(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  const cookieToken = req.cookies.get("access_token")?.value
-
-  let token: string | null = null
-  if (authHeader) {
-    token = authHeader.startsWith("Bearer ") ? authHeader : `Bearer ${authHeader}`
-  } else if (cookieToken) {
-    token = `Bearer ${cookieToken}`
-  }
-
-  return {
-    "Content-Type": "application/json",
-    ...(token && { Authorization: token }),
-  }
-}
 
 // ✅ GET single organization by ID
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const headers = await getAuthHeaders(req)
+    const headers = await getAuthHeaders()
     const { id } = params
 
     const response = await fetch(`${BACKEND_URL}/api/organization/${id}`, { headers })
@@ -43,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 // ✅ DELETE organization by ID
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const headers = await getAuthHeaders(req)
+    const headers = await getAuthHeaders()
     const { id } = params
 
     if (!id) {

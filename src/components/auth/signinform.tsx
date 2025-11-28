@@ -35,7 +35,7 @@ export default function SignInForm() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/")
+        router.push("/") 
         router.refresh()
       } else {
         setError(data.error || "Invalid credentials")
@@ -58,8 +58,8 @@ export default function SignInForm() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Enter your email and password to sign in!</p>
           </div>
           <div>
-            
-            
+
+
             {error && (
               <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                 {error}
@@ -108,12 +108,12 @@ export default function SignInForm() {
                       Keep me logged in
                     </span>
                   </div>
-                  <Link
+                  {/* <Link
                     href="/reset-password"
                     className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
                     Forgot password?
-                  </Link>
+                  </Link> */}
                 </div>
                 <div>
                   <Button className="w-full" size="sm" disabled={isLoading}>
@@ -123,14 +123,14 @@ export default function SignInForm() {
               </div>
             </form>
 
-            {/* <div className="mt-5">
+             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account? {""}
-                <Link href="/auth/signup" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                <Link href="/signup" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                   Sign Up
                 </Link>
               </p>
-            </div> */}
+            </div> 
           </div>
         </div>
       </div>

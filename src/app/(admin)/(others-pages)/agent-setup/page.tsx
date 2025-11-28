@@ -12,8 +12,11 @@ import CreateOrganizationModal from "@/components/agents/create-organization-mod
 import DeleteOrganizationModal from "@/components/agents/delete-organization-modal"
 import VoiceCallModal from "@/components/agents/voice-call-modal"
 import OutboundCallButton from "@/components/header/NotificationDropdown"
+import toast from "react-hot-toast";
+import { extractErrorMessage } from "@/lib/error"; // create this helper if not already
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+
+const BACKEND_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000"
 
 type CostBreakdown = {
   transcriber: number
@@ -29,12 +32,15 @@ export type AgentRecord = {
   display_name?: string
   description?: string
   welcomeMessage?: string
-  instructions?: string
+  prompt?: string
   llmProvider?: string
   llmModel?: string
   llmTokens?: number
   llmTemperature?: number
-  knowledgeBaseId?: string
+  // knowledgeBaseId?: string
+  document_id?: null
+  stt_language?: string
+  tts_model?: string
   language?: string
   asrProvider?: string
   asrModel?: string
@@ -45,6 +51,9 @@ export type AgentRecord = {
   bufferSize?: number
   speedRate?: number
   orgId?: string
+  tools?: {
+    additionalProp1: {}
+  },
 }
 
 type Organization = {
@@ -175,25 +184,47 @@ export default function AgentSetupPage(disabled?: boolean) {
   }
 
   useEffect(() => {
-    const loadOrganizations = async () => {
-      if (!currentUser) return
+  const loadOrganizations = async () => {
+    if (!currentUser) return;
 
-      if (currentUser.role === "admin") {
-        if (currentUser.organization_id) {
-          setSelectedOrgId(currentUser.organization_id.toString())
+    if (currentUser.role === "superadmin") {
+      await fetchOrganizations();
+      return;
+    }
+
+    if (currentUser.organization_id) {
+      try {
+        const res = await fetch(`/api/organizations/${currentUser.organization_id}`, {
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        console.log("🔥 USER ORG API RESPONSE:", data);
+
+        const org =
+          data.organization ||
+          data.org ||
+          data.data ||
+          (data.id ? data : null);
+
+        console.log("🔥 NORMALIZED USER ORG:", org);
+
+        if (org) {
+          setOrganizations([org]);
+          setSelectedOrgId(org.id.toString());
+        } else {
+          console.log("❌ USER HAS NO ORG IN RESPONSE");
         }
-        return
-      }
-
-      if (currentUser.role === "superadmin") {
-        await fetchOrganizations() // use internal API proxy
+      } catch (err) {
+        console.error("ERROR FETCHING USER ORG:", err);
       }
     }
+  };
 
-    if (currentUser && !userLoading) {
-      loadOrganizations()
-    }
-  }, [currentUser, userLoading])
+  if (currentUser && !userLoading) loadOrganizations();
+}, [currentUser, userLoading]);
+
+
 
   useEffect(() => {
     const loadAgents = async () => {
@@ -245,12 +276,21 @@ export default function AgentSetupPage(disabled?: boolean) {
   const selected = useMemo(() => agents.find((a) => a.id === selectedId) || null, [agents, selectedId])
 
   const currentOrganizationName = useMemo(() => {
-    if (currentUser?.role === "admin") return "Default Organization"
-    if (currentUser?.role === "superadmin" && selectedOrgId) {
-      return organizations.find((o) => o.id === selectedOrgId)?.name || "Select Organization"
+    // If no orgs loaded yet
+    if (organizations.length === 0) return "Your Organization";
+
+    // Superadmin → show currently selected org name
+    if (currentUser?.role === "superadmin") {
+      return (
+        organizations.find((o) => o.id.toString() === selectedOrgId)?.name ||
+        "Select Organization"
+      );
     }
-    return "Select Organization"
-  }, [currentUser, selectedOrgId, organizations])
+
+    // Admin or User → they always have only one org
+    return organizations[0].name || "Your Organization";
+  }, [currentUser, selectedOrgId, organizations]);
+
 
   const handleCreateAgent = (name: string, description?: string) => {
     const id = crypto.randomUUID()
@@ -268,9 +308,9 @@ export default function AgentSetupPage(disabled?: boolean) {
       language: "English (India)",
       asrProvider: "Deepgram",
       asrModel: "nova-2",
-      ttsProvider: "OpenAI",
+      ttsProvider: "sarvam",
       ttsModel: "tts-1",
-      ttsVoice: "alloy",
+      ttsVoice: "anushka",
       bufferSize: 200,
       speedRate: 1,
       orgId: selectedOrgId,
@@ -343,24 +383,27 @@ export default function AgentSetupPage(disabled?: boolean) {
     )
   }
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">Please log in to access your workspace.</p>
-            <button
-              onClick={() => (window.location.href = "/signin")}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // if (!currentUser) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+  //       <div className="text-center max-w-md mx-4">
+  //         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+  //           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
+  //           <p className="text-gray-600 dark:text-gray-300 mb-6">Please log in to access your workspace.</p>
+  //           <button
+  //             onClick={() => (window.location.href = "/signin")}
+  //             className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+  //           >
+  //             Go to Login
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   )
+  // }
+
+  console.log("Current User:", currentUser)
+
 
   console.log("Rendering AgentSetupPage with agents:", agents)
 
@@ -369,7 +412,7 @@ export default function AgentSetupPage(disabled?: boolean) {
       <PageBreadcrumb pageTitle="Agent Setup" />
 
       {/* Error Banner - preserved functionality */}
-      {error && (
+      {/* {error && (
         <div className="mx-6 mb-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
             <div className="flex items-center">
@@ -390,7 +433,7 @@ export default function AgentSetupPage(disabled?: boolean) {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Loading Banner - preserved functionality */}
       {loading && (
@@ -417,8 +460,9 @@ export default function AgentSetupPage(disabled?: boolean) {
                 <h2 className="text-sm font-semibold text-muted-foreground dark:text-gray-200">Select Your Organizations</h2>
               </div>
 
+
               {/* Organization selector - shown for superadmin to preserve existing role-based behavior */}
-              {showOrganizationSelector && (
+              {currentUser?.role === "superadmin" && (
                 <div className="mb-3" ref={orgMenuRef}>
                   <div className="relative">
                     <button
@@ -525,6 +569,15 @@ export default function AgentSetupPage(disabled?: boolean) {
                 </div>
               )}
 
+              {currentUser?.role !== "superadmin" && (
+                <div className="mb-3">
+                  <div className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
+                    {currentOrganizationName}
+                  </div>
+                </div>
+              )}
+
+
               {/* New Agent button - mirrors Agents UI, keeps disabled behavior when no org selected */}
               <div className="flex items-center gap-2">
                 <Button size="sm" className="w-full" onClick={() => setModalOpen(true)} disabled={!selectedOrgId}>
@@ -532,7 +585,7 @@ export default function AgentSetupPage(disabled?: boolean) {
                 </Button>
               </div>
 
-              
+
               {/* Agents list */}
               <ul className="mt-4 space-y-1">
                 {agents
@@ -733,32 +786,48 @@ export default function AgentSetupPage(disabled?: boolean) {
             onConfirm={async () => {
               try {
                 if (!selectedOrgId) {
-                  setOrgDeleteOpen(false)
-                  return
+                  setOrgDeleteOpen(false);
+                  return;
                 }
-                setLoading(true)
-                setError(null)
-                const res = await fetch(`/api/organizations/${encodeURIComponent(selectedOrgId)}`, {
-                  method: "DELETE",
-                  credentials: "include",
-                })
+
+                setLoading(true);
+                setError(null);
+
+                const res = await fetch(
+                  `/api/organizations/${encodeURIComponent(selectedOrgId)}`,
+                  {
+                    method: "DELETE",
+                    credentials: "include",
+                  }
+                );
+
                 if (!res.ok) {
-                  const text = await res.text().catch(() => "")
-                  throw new Error(text || "Failed to delete organization")
+                  const message = await extractErrorMessage(
+                    res,
+                    "Failed to delete organization"
+                  );
+                  throw new Error(message);
                 }
-                setOrganizations((prev) => prev.filter((o) => o.id !== selectedOrgId))
-                // reset selection if needed
-                const remaining = organizations.filter((o) => o.id !== selectedOrgId)
-                setSelectedOrgId(remaining[0]?.id ?? "")
-                setAgents([]) // clear agents for deleted org
+
+                toast.success("Organization deleted successfully");
+
+                setOrganizations((prev) => prev.filter((o) => o.id !== selectedOrgId));
+
+                const remaining = organizations.filter((o) => o.id !== selectedOrgId);
+                setSelectedOrgId(remaining[0]?.id ?? "");
+                setAgents([]); // clear agents for deleted org
               } catch (e: any) {
-                setError(e?.message || "Failed to delete organization")
+                console.error("Failed to delete organization:", e);
+                const msg = e?.message || "Failed to delete organization";
+                toast.error(msg);
+                setError(msg);
               } finally {
-                setLoading(false)
-                setOrgDeleteOpen(false)
+                setLoading(false);
+                setOrgDeleteOpen(false);
               }
             }}
           />
+
           <ChatDrawer
             open={chatOpen}
             onClose={() => setChatOpen(false)}

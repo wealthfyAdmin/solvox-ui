@@ -17,17 +17,19 @@ function Help({ children }: { children: React.ReactNode }) {
 }
 
 const LANGUAGES = [
-  { value: "en-US", label: "English (US)" },
-  { value: "en-IN", label: "English (India)" },
-  { value: "en-GB", label: "English (UK)" },
-  { value: "es-ES", label: "Spanish (Spain)" },
-  { value: "fr-FR", label: "French (France)" },
-  { value: "de-DE", label: "German (Germany)" },
-  { value: "it-IT", label: "Italian (Italy)" },
-  { value: "pt-BR", label: "Portuguese (Brazil)" },
-  { value: "ja-JP", label: "Japanese (Japan)" },
-  { value: "ko-KR", label: "Korean (South Korea)" },
-]
+  { value: "en-IN", label: "English" },
+  { value: "bn-IN", label: "Bengali" },
+  { value: "gu-IN", label: "Gujarati" },
+  { value: "hi-IN", label: "Hindi" },
+  { value: "kn-IN", label: "Kannada" },
+  { value: "ml-IN", label: "Malayalam" },
+  { value: "mr-IN", label: "Marathi" },
+  { value: "od-IN", label: "Odia" },
+  { value: "pa-IN", label: "Punjabi" },
+  { value: "ta-IN", label: "Tamil" },
+  { value: "te-IN", label: "Telugu" },
+];
+
 
 const ASR_PROVIDERS = [
   { value: "deepgram", label: "Deepgram" },
@@ -54,46 +56,46 @@ const ASR_MODELS = {
 }
 
 const TTS_PROVIDERS = [
-  { value: "openai", label: "OpenAI" },
-  { value: "elevenlabs", label: "ElevenLabs" },
-  { value: "azure", label: "Azure Speech" },
-  { value: "google", label: "Google Text-to-Speech" },
+  { value: "sarvam", label: "Sarvam" },
 ]
 
 const TTS_VOICES = {
-  openai: [
-    { value: "alloy", label: "Alloy" },
-    { value: "echo", label: "Echo" },
-    { value: "fable", label: "Fable" },
-    { value: "onyx", label: "Onyx" },
-    { value: "nova", label: "Nova" },
-    { value: "shimmer", label: "Shimmer" },
+  // openai: [
+  //   { value: "alloy", label: "Alloy" },
+  //   { value: "echo", label: "Echo" },
+  //   { value: "fable", label: "Fable" },
+  //   { value: "onyx", label: "Onyx" },
+  //   { value: "nova", label: "Nova" },
+  //   { value: "shimmer", label: "Shimmer" },
+  // ],
+    sarvamai: [
+    { value: "anushka", label: "Anushka" },
   ],
-  elevenlabs: [
-    { value: "rachel", label: "Rachel" },
-    { value: "domi", label: "Domi" },
-    { value: "bella", label: "Bella" },
-    { value: "antoni", label: "Antoni" },
-    { value: "elli", label: "Elli" },
-    { value: "josh", label: "Josh" },
-    { value: "arnold", label: "Arnold" },
-    { value: "adam", label: "Adam" },
-    { value: "sam", label: "Sam" },
-  ],
-  azure: [
-    { value: "jenny", label: "Jenny" },
-    { value: "guy", label: "Guy" },
-    { value: "aria", label: "Aria" },
-    { value: "davis", label: "Davis" },
-    { value: "jane", label: "Jane" },
-  ],
-  google: [
-    { value: "en-US-Wavenet-D", label: "Wavenet D" },
-    { value: "en-US-Wavenet-F", label: "Wavenet F" },
-    { value: "en-US-Neural2-C", label: "Neural2 C" },
-    { value: "en-US-Neural2-D", label: "Neural2 D" },
-    { value: "en-IN-Chirp3-HD-Achernar", label: "Achernar HD" },
-  ],
+  // elevenlabs: [
+  //   { value: "rachel", label: "Rachel" },
+  //   { value: "domi", label: "Domi" },
+  //   { value: "bella", label: "Bella" },
+  //   { value: "antoni", label: "Antoni" },
+  //   { value: "elli", label: "Elli" },
+  //   { value: "josh", label: "Josh" },
+  //   { value: "arnold", label: "Arnold" },
+  //   { value: "adam", label: "Adam" },
+  //   { value: "sam", label: "Sam" },
+  // ],
+  // azure: [
+  //   { value: "jenny", label: "Jenny" },
+  //   { value: "guy", label: "Guy" },
+  //   { value: "aria", label: "Aria" },
+  //   { value: "davis", label: "Davis" },
+  //   { value: "jane", label: "Jane" },
+  // ],
+  // google: [
+  //   { value: "en-US-Wavenet-D", label: "Wavenet D" },
+  //   { value: "en-US-Wavenet-F", label: "Wavenet F" },
+  //   { value: "en-US-Neural2-C", label: "Neural2 C" },
+  //   { value: "en-US-Neural2-D", label: "Neural2 D" },
+  //   { value: "en-IN-Chirp3-HD-Achernar", label: "Achernar HD" },
+  // ],
 }
 
 export default function AudioTab({
@@ -109,7 +111,7 @@ export default function AudioTab({
   const currentTtsProvider = agent?.ttsProvider?.toLowerCase() || "openai"
 
   const availableAsrModels = ASR_MODELS[currentAsrProvider as keyof typeof ASR_MODELS] || ASR_MODELS.deepgram
-  const availableTtsVoices = TTS_VOICES[currentTtsProvider as keyof typeof TTS_VOICES] || TTS_VOICES.openai
+  const availableTtsVoices = TTS_VOICES[currentTtsProvider as keyof typeof TTS_VOICES] || TTS_VOICES.sarvamai
 
   return (
     <div className="space-y-6 dark:text-white">
@@ -134,9 +136,9 @@ export default function AudioTab({
       </Section>
 
       {/* Speech-to-Text Configuration */}
-      <Section title="Speech-to-Text (ASR)">
+      {/* <Section title="Speech-to-Text (ASR)">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* ASR Provider */}
+         
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Provider</label>
             <select
@@ -161,7 +163,7 @@ export default function AudioTab({
             </select>
           </div>
 
-          {/* ASR Model */}
+         
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Model</label>
             <select
@@ -178,17 +180,17 @@ export default function AudioTab({
             </select>
           </div>
         </div>
-      </Section>
+      </Section> */}
 
       {/* Text-to-Speech Configuration */}
       <Section title="Text-to-Speech (TTS)">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* TTS Provider */}
+        
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Provider</label>
             <select
               disabled={disabled}
-              value={agent?.ttsProvider?.toLowerCase() || "openai"}
+              value={agent?.ttsProvider?.toLowerCase() || "sarvamai"}
               onChange={(e) => {
                 const provider = e.target.value
                 const providerLabel = TTS_PROVIDERS.find((p) => p.value === provider)?.label || "OpenAI"
@@ -208,7 +210,7 @@ export default function AudioTab({
             </select>
           </div>
 
-          {/* TTS Voice */}
+        
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Voice</label>
             <select
@@ -226,7 +228,7 @@ export default function AudioTab({
           </div>
         </div>
 
-        {/* TTS Model (for providers that support it) */}
+       
         {currentTtsProvider === "elevenlabs" && (
           <div className="mt-4">
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Model</label>
@@ -245,9 +247,9 @@ export default function AudioTab({
       </Section>
 
       {/* Audio Processing Settings */}
-      <Section title="Audio Processing">
+      {/* <Section title="Audio Processing">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Buffer Size */}
+       
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Buffer Size (ms)</label>
             <div className="space-y-2">
@@ -270,7 +272,6 @@ export default function AudioTab({
             <Help>Audio buffer size affects latency vs quality trade-off</Help>
           </div>
 
-          {/* Speed Rate */}
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Speed Rate</label>
             <div className="space-y-2">
@@ -295,7 +296,7 @@ export default function AudioTab({
             <Help>Speech playback speed multiplier</Help>
           </div>
         </div>
-      </Section>
+      </Section> */}
     </div>
   )
 }

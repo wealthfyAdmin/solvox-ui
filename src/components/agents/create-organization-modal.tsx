@@ -1,75 +1,102 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Modal } from "@/components/ui/modal"
-import Button from "../ui/button/Button"
+import { useEffect, useState } from "react";
+import { Modal } from "@/components/ui/modal";
+import Button from "../ui/button/Button";
 
 export default function CreateOrganizationModal({
   open,
   onClose,
   onCreate,
+  disableClose = false,
 }: {
-  open: boolean
-  onClose: () => void
-  onCreate: (name: string, description?: string) => void | Promise<void>
+  open: boolean;
+  onClose: () => void;
+  onCreate: (name: string, description?: string) => void | Promise<void>;
+  disableClose?: boolean;
 }) {
-  const [name, setName] = useState("")
-  const [desc, setDesc] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setName("")
-      setDesc("")
-      setSubmitError(null)
-      setSubmitting(false)
+      setName("");
+      setDesc("");
+      setSubmitError(null);
+      setSubmitting(false);
     }
-  }, [open])
+  }, [open]);
 
   const handleCreate = async () => {
-    const orgName = name.trim()
-    const orgDesc = desc.trim()
-    if (!orgName) return
+    const orgName = name.trim();
+    const orgDesc = desc.trim();
+    if (!orgName) return;
 
     try {
-      setSubmitting(true)
-      setSubmitError(null)
+      setSubmitting(true);
+      setSubmitError(null);
 
       const payload = {
         name: orgName,
         description: orgDesc || undefined,
         is_active: true,
-        keys: {},
-      }
+        keys: {
+          additionalProp1: {},
+        },
+      };
 
       const res = await fetch("/api/organizations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),
-      })
+      });
 
       if (!res.ok) {
-        const text = await res.text().catch(() => "")
-        throw new Error(text || "Failed to create organization")
+        const text = await res.text().catch(() => "");
+
+        let message = "Failed to create organization";
+
+        try {
+          const json = JSON.parse(text);
+          if (json?.detail) message = json.detail;
+        } catch {
+          message = text || message;
+        }
+
+        throw new Error(message);
       }
 
-      await onCreate(orgName, orgDesc || undefined)
-      onClose()
+      await onCreate(orgName, orgDesc || undefined);
+      if (!disableClose) onClose();
     } catch (err: any) {
-      setSubmitError(err?.message || "Failed to create organization")
+      setSubmitError(err?.message || "Failed to create organization");
+      console.error("Create organization error:", err);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
+
 
   return (
-    <Modal isOpen={open} onClose={onClose} className="max-w-lg p-8">
-      <h3 className="mb-6 text-xl font-semibold text-foreground dark:text-white">Create organization</h3>
+    <Modal
+      isOpen={open}
+      onClose={disableClose ? () => { } : onClose}
+      closeOnOverlayClick={!disableClose}
+      closeOnEsc={!disableClose}
+      className="max-w-lg p-8"
+    >
+      <h3 className="mb-6 text-xl font-semibold text-foreground dark:text-white">
+        Create organization
+      </h3>
+
       <div className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">Organization Name</label>
+          <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">
+            Organization Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -77,6 +104,7 @@ export default function CreateOrganizationModal({
             placeholder="Acme Inc."
           />
         </div>
+
         <div>
           <label className="mb-1 block text-sm font-medium text-foreground dark:text-white">
             Organization Description
@@ -89,20 +117,36 @@ export default function CreateOrganizationModal({
             placeholder="What does your organization do?"
           />
         </div>
+
         {submitError && (
           <p className="text-sm text-red-600 dark:text-red-400" role="alert">
             {submitError}
           </p>
         )}
       </div>
+
       <div className="mt-6 flex items-center justify-end gap-3">
-        <Button variant="outline" size="sm" onClick={onClose} disabled={submitting}>
-          Cancel
-        </Button>
-        <Button size="sm" onClick={handleCreate} disabled={!name.trim() || submitting} aria-busy={submitting}>
+        {/* Hide cancel button entirely when disableClose is true */}
+        {!disableClose && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+        )}
+
+        <Button
+          size="sm"
+          onClick={handleCreate}
+          disabled={!name.trim() || submitting}
+          aria-busy={submitting}
+        >
           {submitting ? "Creating..." : "Create"}
         </Button>
       </div>
     </Modal>
-  )
+  );
 }

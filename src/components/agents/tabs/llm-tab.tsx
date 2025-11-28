@@ -107,7 +107,7 @@ export default function LLMTab({
       </Section>
 
       {/* Temperature Control */}
-      <Section title="Temperature">
+      {/* <Section title="Temperature">
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             <input
@@ -132,10 +132,10 @@ export default function LLMTab({
             Increasing temperature enables heightened creativity, but increases chance of deviation from prompt
           </Help>
         </div>
-      </Section>
+      </Section> */}
 
       {/* Token Limit */}
-      <Section title="Tokens generated on each LLM output">
+      {/* <Section title="Tokens generated on each LLM output">
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             <input
@@ -160,7 +160,7 @@ export default function LLMTab({
             Increasing tokens enables longer responses to be queued for speech generation but increases latency
           </Help>
         </div>
-      </Section>
+      </Section> */}
 
       {/* Knowledge Base */}
       <Section title="Knowledge Base">

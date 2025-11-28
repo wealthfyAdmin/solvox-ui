@@ -122,7 +122,7 @@ export default function AudioTab({
           value={agent?.language?.includes("India") ? "en-IN" : "en-US"}
           onChange={(e) => {
             const selectedLang = LANGUAGES.find((lang) => lang.value === e.target.value)
-            onUpdate({ language: selectedLang?.label || "English (US)" })
+            onUpdate({ language: selectedLang?.value || "English (US)" })
           }}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
         >
@@ -183,7 +183,7 @@ export default function AudioTab({
       </Section> */}
 
       {/* Text-to-Speech Configuration */}
-      <Section title="Text-to-Speech (TTS)">
+      {/* <Section title="Text-to-Speech (TTS)">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
           <div>
@@ -244,7 +244,7 @@ export default function AudioTab({
             </select>
           </div>
         )}
-      </Section>
+      </Section> */}
 
       {/* Audio Processing Settings */}
       {/* <Section title="Audio Processing">

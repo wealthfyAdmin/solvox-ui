@@ -1,4 +1,4 @@
-name: Placeholder Workflow
+name: Build and Push Docker Image (Manual)
 
 on:
   workflow_dispatch:

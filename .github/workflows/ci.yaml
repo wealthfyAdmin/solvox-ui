@@ -1,0 +1,72 @@
+name: Build and Push Docker Image (Manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2) Short SHA Extract
+      - name: Extract Short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      # 3) Docker Hub Login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 4) Build Docker Image
+      - name: Build Docker Image
+        run: |
+          IMAGE="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/solvox-ui"
+          docker build -t $IMAGE:latest -t $IMAGE:${{ env.SHORT_SHA }} .
+
+      # 5) Install Trivy
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb "$(lsb_release -sc)" main | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
+          sudo apt-get install -y trivy
+          trivy --version
+
+      # 6) Scan Image with Trivy AND Save Report (NO FAILURE)
+      - name: Image Security Scan (Trivy)
+        run: |
+          IMAGE="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/solvox-ui:latest"
+          echo "Running Trivy scan..."
+          trivy image --exit-code 0 --format table $IMAGE > trivy-report.txt || true
+          echo "Trivy report generated as trivy-report.txt"
+
+      # 7) Upload Scan Report as Artifact
+      - name: Upload Trivy Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-report
+          path: trivy-report.txt
+
+      # 8) Push Image to Docker Hub
+      - name: Push Docker Image
+        run: |
+          IMAGE="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/solvox-ui"
+          docker push $IMAGE:latest
+          docker push $IMAGE:${{ env.SHORT_SHA }}
+
+      # 9) Output Details
+      - name: Print Image Info
+        run: |
+          IMAGE="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/solvox-ui"
+          echo "Pushed docker images:"
+          echo "$IMAGE:latest"
+          echo "$IMAGE:${{ env.SHORT_SHA }}"
+          echo "Artifact uploaded: trivy-scan-report"

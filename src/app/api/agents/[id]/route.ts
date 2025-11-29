@@ -14,6 +14,33 @@ async function buildAuthHeaders(req: NextRequest) {
   }
 }
 
+// ✅ NEW: PUT handler for updates
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const headers = await buildAuthHeaders(req)
+    const body = await req.json()
+    
+    const response = await fetch(`${BACKEND_URL}/api/agent/${encodeURIComponent(params.id)}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(body),
+    })
+
+    const text = await response.text().catch(() => "")
+    let data: any = null
+    try {
+      data = text ? JSON.parse(text) : null
+    } catch {
+      data = { raw: text }
+    }
+
+    return NextResponse.json(data ?? {}, { status: response.status })
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Internal server error" }, { status: 500 })
+  }
+}
+
+// ✅ Your existing DELETE handler
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const headers = await buildAuthHeaders(req)

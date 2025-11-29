@@ -73,13 +73,14 @@ export default function AgentTabs({
         is_active: true,
       }
 
-      // ← CHANGED: Use dynamic backendUrl state
-      const res = await fetch(`${backendUrl}/api/agent/${encodeURIComponent(agent.id)}`, {
+      // ✅ ONLY CHANGE THIS LINE in handleSaveChanges:
+      const res = await fetch(`/api/agents/${encodeURIComponent(agent.id)}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      })
+
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))

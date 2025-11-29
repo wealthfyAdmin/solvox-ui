@@ -97,14 +97,14 @@
 }
         
         #voice-agent-overlay {
-          position: absolute; bottom: 0; width: 100%; height: 180px;
+          position: absolute; bottom: 0; width: 100%; height: 130px;
           background: linear-gradient(to top, rgba(255,255,255,0.95) 40%, rgba(255,255,255,0.3) 100%);
           display: flex; flex-direction: column; align-items: center;
           justify-content: flex-end; padding-bottom: 16px;
           border-radius: 0 0 20px 20px;
         }
         #voice-agent-button {
-          margin-bottom: 50px;
+          margin-bottom: 30px;
           padding: 12px 28px; border-radius: 40px;
           background: #465fff; color: #fff;
           font-weight: 600; font-style: italic; font-size: 16px;

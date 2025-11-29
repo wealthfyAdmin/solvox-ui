@@ -33,10 +33,14 @@ export type AgentRecord = {
   description?: string
   welcomeMessage?: string
   prompt?: string
+  instructions?: string
   llmProvider?: string
+  greeting_message?: string
   llmModel?: string
   llmTokens?: number
   llmTemperature?: number
+  llm_provider?: string
+  llm_model?: string
   // knowledgeBaseId?: string
   document_id?: null
   stt_language?: string

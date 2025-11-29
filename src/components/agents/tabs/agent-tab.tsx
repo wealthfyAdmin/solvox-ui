@@ -25,6 +25,8 @@ export default function AgentTab({
   onUpdate: (patch: Partial<AgentRecord>) => void
   disabled?: boolean
 }) {
+
+  console.log("Rendering AgentTab with agent:", agent)
   return (
     <div className="space-y-6 dark:text-white">
       {/* Agent Name Section */}
@@ -56,7 +58,7 @@ export default function AgentTab({
       <Section title="Agent Welcome Message">
         <input
           disabled={disabled}
-          value={agent?.welcomeMessage ?? ""}
+          value={agent?.greeting_message ?? ""}
           onChange={(e) => onUpdate({ welcomeMessage: e.target.value })}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Hello from Solvox"
@@ -70,10 +72,11 @@ export default function AgentTab({
       {agent && (
         <Section title="Agent Prompt">
           <div className="flex flex-col gap-2">
+             
             <textarea
               disabled={disabled}
-              value={agent?.prompt ?? ""}
-              onChange={(e) => onUpdate({ prompt: e.target.value })}
+              value={agent?.instructions ?? ""}
+              onChange={(e) => onUpdate({ instructions: e.target.value })}
               rows={8}
               className="w-full resize-y rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="You are a helpful AI assistant. You will help customers with their queries and provide accurate, concise responses. Keep your responses professional and helpful."

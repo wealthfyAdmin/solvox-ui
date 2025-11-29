@@ -30,7 +30,7 @@ export default function AgentTabs({
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
-  
+
   // ← NEW: Dynamic backend URL from window.__ENV
   const [backendUrl, setBackendUrl] = useState("http://localhost:8000")
 
@@ -54,10 +54,10 @@ export default function AgentTabs({
         document_id: agent.document_id,
         display_name: agent.display_name,
         description: agent.description,
-        instructions: agent.prompt,
+        instructions: agent.instructions,
         greeting_message: agent.welcomeMessage,
-        llm_provider: agent.llmProvider,
-        llm_model: agent.llmModel,
+        llm_provider: agent.llm_provider,
+        llm_model: agent.llm_model,
         temperature: agent.llmTemperature ?? 0.7,
         token_limit: agent.llmTokens ?? 450,
         stt_provider: agent.asrProvider,
@@ -113,8 +113,8 @@ export default function AgentTabs({
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
               }`}
           >
             {tab.label}

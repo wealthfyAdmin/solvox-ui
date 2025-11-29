@@ -6,7 +6,6 @@ import { LiveKitRoom, useRoomContext, useLocalParticipant } from "@livekit/compo
 import { Mic, MicOff, X, PhoneOff } from "lucide-react"
 import {useChatAndTranscription} from "@/hooks/useChatAndTranscription"
 import OutboundCallButton from "../header/NotificationDropdown"
-import WaveAnimation from "../waveanimation/wave-animation"
 import AgentJoiningAnimation from "../agentjoininganimation/agent-joining-animation"
 
 interface ChatWindowProps {

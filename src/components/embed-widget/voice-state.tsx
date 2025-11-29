@@ -112,7 +112,7 @@ export default function VoiceState({ room, agentName, onEndCall, display_name }:
       <style jsx global>{`
         .voice-wave {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
           gap: 15px;
           height: 120px;

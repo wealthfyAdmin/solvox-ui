@@ -113,13 +113,15 @@ export default function AudioTab({
   const availableAsrModels = ASR_MODELS[currentAsrProvider as keyof typeof ASR_MODELS] || ASR_MODELS.deepgram
   const availableTtsVoices = TTS_VOICES[currentTtsProvider as keyof typeof TTS_VOICES] || TTS_VOICES.sarvamai
 
+  console.log("Rendering AudioTab with agent:", agent?.stt_language)
+
   return (
     <div className="space-y-6 dark:text-white">
       {/* Language Selection */}
       <Section title="Language">
         <select
           disabled={disabled}
-          value={agent?.language?.includes("India") ? "en-IN" : "en-US"}
+        value={agent?.stt_language || "en-IN"}
           onChange={(e) => {
             const selectedLang = LANGUAGES.find((lang) => lang.value === e.target.value)
             onUpdate({ language: selectedLang?.value || "English (US)" })

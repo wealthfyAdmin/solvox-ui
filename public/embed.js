@@ -70,30 +70,41 @@
       style.id = "voice-agent-style"
       style.textContent = `
         #${config.widgetId} {
-          position: fixed; bottom: 20px; right: 20px;
-          width: 360px; height: 580px;
-          border-radius: 20px; 
-          overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-          z-index: 999999; transform-origin: bottom right;
-          transition: all 0.3s ease-in-out;
-        }
+  position: fixed; 
+  bottom: 20px; 
+  right: 20px;
+  width: 340px !important; 
+  height: 450px !important;
+  border-radius: 18px; 
+  overflow: hidden; 
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  z-index: 999999; 
+  transform-origin: bottom right;
+  transition: all 0.3s ease-in-out;
+}
+
         #${config.widgetId}.collapsed {
           transform: scale(0); opacity: 0; pointer-events: none;
         }
-        #voice-agent-video {
-          position: absolute; top: 0; left: 0;
-          width: 100%; height: 100%; object-fit: cover;
-          border-radius: 20px;
-        }
+          #voice-agent-video {
+  position: absolute; 
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover;
+  border-radius: 18px;
+}
+        
         #voice-agent-overlay {
-          position: absolute; bottom: 0; width: 100%; height: 180px;
+          position: absolute; bottom: 0; width: 100%; height: 130px;
           background: linear-gradient(to top, rgba(255,255,255,0.95) 40%, rgba(255,255,255,0.3) 100%);
           display: flex; flex-direction: column; align-items: center;
           justify-content: flex-end; padding-bottom: 16px;
           border-radius: 0 0 20px 20px;
         }
         #voice-agent-button {
-          margin-bottom: 50px;
+          margin-bottom: 30px;
           padding: 12px 28px; border-radius: 40px;
           background: #465fff; color: #fff;
           font-weight: 600; font-style: italic; font-size: 16px;
@@ -137,9 +148,12 @@
 }
 
         #${config.iframeId} {
-          width: 100%; height: 100%; border: none;
-          border-radius: 20px; display: none;
-        }
+  width: 100%; 
+  height: 100%; 
+  border: none;
+  border-radius: 18px;
+  display: none;
+}
         #${config.iframeId}.active {
           display: block; animation: fadeIn 0.3s ease-in-out forwards;
         }

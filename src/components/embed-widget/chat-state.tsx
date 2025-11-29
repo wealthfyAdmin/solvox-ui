@@ -1,147 +1,140 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { Room } from "livekit-client"
-import { RoomAudioRenderer, useLocalParticipant } from "@livekit/components-react"
-import { Mic, Send, PhoneOff } from "lucide-react"
-import { useChatAndTranscription } from "@/hooks/useChatAndTranscription"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Room } from "livekit-client";
+import { RoomAudioRenderer, useLocalParticipant } from "@livekit/components-react";
+import { Mic, Send } from "lucide-react";
+import { useChatAndTranscription } from "@/hooks/useChatAndTranscription";
 
 interface Message {
-  id: string
-  text: string
-  timestamp: number
-  sender: "user" | "agent"
-  isLocal: boolean
+  id: string;
+  text: string;
+  timestamp: number;
+  sender: "user" | "agent";
+  isLocal: boolean;
 }
 
 interface ChatStateProps {
-  agentName: string
-  room: Room
-  onStartVoice: () => void
-  onEndCall: () => void
-  display_name?: string
+  agentName: string;
+  room: Room;
+  onStartVoice: () => void;
+  onEndCall: () => void;
+  display_name?: string;
 }
 
-const isUserMessage = (msg: Message) => msg.sender === "user"
+const isUserMessage = (msg: Message) => msg.sender === "user";
 
-function ChatMessage({ message, agentName, display_name }: { message: Message; agentName: string; display_name?: string }) {
-  const isOwn = isUserMessage(message)
+function ChatMessage({
+  message,
+  display_name
+}: {
+  message: Message;
+  display_name?: string;
+}) {
+  const isOwn = isUserMessage(message);
 
   return (
-    <div className={`flex mb-4 ${isOwn ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[75%] ${isOwn ? "order-2" : "order-1"}`}>
+    <div className={`flex mb-2 ${isOwn ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[85%] ${isOwn ? "order-2" : "order-1"}`}>
         {!isOwn && (
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AI</span>
-            </div>
-            <span className="text-xs font-medium text-gray-600">{display_name}</span>
+          <div className="flex items-center gap-1 mb-0.5 pl-1">
+            <span className="text-[10px] text-gray-600">{display_name}</span>
           </div>
         )}
 
         <div
-          className={`px-4 py-2 rounded-2xl shadow-sm ${
+          className={`px-3 py-1.5 rounded-xl shadow-sm text-xs leading-relaxed ${
             isOwn
               ? "bg-indigo-600 text-white rounded-br-sm"
               : "bg-white text-gray-800 rounded-bl-sm"
           }`}
         >
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.text}</div>
+          <div className="whitespace-pre-wrap">{message.text}</div>
         </div>
 
-        <div className={`text-xs text-gray-500 mt-1 ${isOwn ? "text-right" : "text-left"}`}>
+        <div
+          className={`text-[9px] text-gray-500 mt-0.5 ${
+            isOwn ? "text-right pr-1" : "text-left pl-1"
+          }`}
+        >
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
-            minute: "2-digit",
+            minute: "2-digit"
           })}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default function ChatState({ agentName, room, onStartVoice, onEndCall }: ChatStateProps) {
-  const [inputText, setInputText] = useState("")
-  const [orderedMessages, setOrderedMessages] = useState<Message[]>([])
-  const [isConnecting, setIsConnecting] = useState(true)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { messages, send } = useChatAndTranscription()
-  const { localParticipant } = useLocalParticipant()
+export default function ChatState({ agentName, room, onStartVoice }: ChatStateProps) {
+  const [inputText, setInputText] = useState("");
+  const [orderedMessages, setOrderedMessages] = useState<Message[]>([]);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Disable mic while in chat mode
-  useEffect(() => {
-    const disableMic = async () => {
-      try {
-        await room.localParticipant.setMicrophoneEnabled(false)
-        console.log("[ChatState] Microphone disabled during chat.")
-      } catch (err) {
-        console.error("[ChatState] Failed to disable mic:", err)
-      }
-    }
-    disableMic()
-  }, [room])
+  const { messages, send } = useChatAndTranscription();
+  const { localParticipant } = useLocalParticipant();
 
-  // Simulate connecting animation
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsConnecting(false)
-    }, 1200)
-    return () => clearTimeout(timer)
-  }, [])
+    room.localParticipant.setMicrophoneEnabled(false).catch(console.error);
+  }, [room]);
 
-  // Process messages
   useEffect(() => {
-    const processedMessages: Message[] = messages.map((msg) => {
+    const timer = setTimeout(() => setIsConnecting(false), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const processed: Message[] = messages.map((msg) => {
       const isUser =
         msg.from?.isLocal === true ||
         msg.from?.identity === localParticipant?.identity ||
-        (msg.from?.identity?.toLowerCase().includes("user") ?? false)
+        msg.from?.identity?.toLowerCase().includes("user");
 
       return {
         id: msg.id || `msg-${Date.now()}-${Math.random()}`,
         text: msg.message,
         timestamp: typeof msg.timestamp === "number" ? msg.timestamp : Date.now(),
         sender: isUser ? "user" : "agent",
-        isLocal: isUser,
-      }
-    })
-    setOrderedMessages(processedMessages)
-  }, [messages, localParticipant?.identity])
+        isLocal: isUser
+      };
+    });
 
-  // Auto-scroll
+    setOrderedMessages(processed);
+  }, [messages, localParticipant?.identity]);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [orderedMessages.length])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [orderedMessages.length]);
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!text.trim()) return
-      await send(text)
-      setInputText("")
+      if (!text.trim()) return;
+      await send(text);
+      setInputText("");
     },
     [send]
-  )
+  );
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: any) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage(inputText)
+      e.preventDefault();
+      sendMessage(inputText);
     }
-  }
+  };
 
-  // If connecting, show loader animation
   if (isConnecting) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-white">
-        <div className="flex flex-col items-center">
-          <div className="loader mb-4"></div>
-          <p className="text-gray-600 font-medium text-sm">Connecting to {agentName}...</p>
-        </div>
+        <div className="loader mb-3"></div>
+        <p className="text-gray-600 text-xs">Connecting to {agentName}...</p>
+
         <style jsx>{`
           .loader {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #cbd5e1;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #cbd5e1;
             border-top-color: #6366f1;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -153,65 +146,49 @@ export default function ChatState({ agentName, room, onStartVoice, onEndCall }: 
           }
         `}</style>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* No voice in chat mode */}
       <RoomAudioRenderer />
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-1">
-          {orderedMessages.map((message) => (
-            <ChatMessage key={message.id} message={message} agentName={agentName} />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="flex-1 overflow-y-auto p-2 bg-gray-50">
+        {orderedMessages.map((m) => (
+          <ChatMessage key={m.id} message={m} display_name={agentName} />
+        ))}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Bar */}
-      <div className="border-t border-gray-200 bg-white p-3">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              onClick={onStartVoice}
-              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-              title="Switch to voice chat"
-            >
-              <Mic className="w-5 h-5 text-gray-700" />
-            </button>
-            <button
-              onClick={() => sendMessage(inputText)}
-              disabled={!inputText.trim()}
-              className="w-10 h-10 rounded-full bg-indigo-600 disabled:bg-gray-300 flex items-center justify-center hover:bg-indigo-700 transition-colors disabled:cursor-not-allowed"
-              title="Send message"
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
+      {/* Input */}
+      <div className="border-t border-gray-200 bg-white p-2">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type a message..."
+            className="flex-1 px-3 py-2 bg-gray-100 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
 
-          {/* End Session */}
-          {/* <div className="mt-3 flex justify-center">
-            <button
-              onClick={onEndCall}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-medium transition-colors"
-            >
-              <PhoneOff className="w-4 h-4" />
-              <span>End Session</span>
-            </button>
-          </div> */}
+          <button
+            onClick={onStartVoice}
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+          >
+            <Mic className="w-4 h-4 text-gray-700" />
+          </button>
+
+          <button
+            onClick={() => sendMessage(inputText)}
+            disabled={!inputText.trim()}
+            className="w-8 h-8 rounded-full bg-indigo-600 disabled:bg-gray-300 flex items-center justify-center hover:bg-indigo-700"
+          >
+            <Send className="w-4 h-4 text-white" />
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }

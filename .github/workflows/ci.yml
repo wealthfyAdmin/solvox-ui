@@ -1,0 +1,11 @@
+name: Placeholder Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  say-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo Ready
+        run: echo "ready"

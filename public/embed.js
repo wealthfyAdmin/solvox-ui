@@ -20,7 +20,7 @@
   } else {
     const origin = scriptUrl.origin || ""
     if (!origin.includes("https://app.solvox.ai")) {
-      baseUrl = " http://localhost:3000"
+      baseUrl = "https://app.solvox.ai"
     }
   }
 
@@ -189,7 +189,7 @@
 
       const close = document.createElement("button")
       close.id = "voice-agent-close"
-      close.innerHTML = `<img src="http://localhost:3000/images/icons/icons8-close-48.png" 
+      close.innerHTML = `<img src="https://app.solvox.ai/images/icons/icons8-close-48.png" 
       style="width:35px;height:35px;" />`
 
 
